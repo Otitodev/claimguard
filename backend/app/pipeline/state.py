@@ -1,0 +1,33 @@
+import uuid
+from datetime import date
+from typing import Optional, TypedDict
+
+from ..schemas import DenialClassification, ExtractedEOB
+
+
+class PipelineState(TypedDict, total=False):
+    # inputs
+    practice_id: uuid.UUID
+    pdf_bytes: bytes
+    source_document_url: Optional[str]
+    # parse_eob
+    raw_text: str
+    extracted: ExtractedEOB
+    # resolve_patient_and_payer
+    patient_id: uuid.UUID
+    payer_id: uuid.UUID
+    payer_name: str
+    appeal_window_days: int
+    # match_or_create_claim
+    claim_id: uuid.UUID
+    # classify_denial
+    primary_denial_code: Optional[str]
+    denial_category: Optional[str]
+    appeal_deadline: Optional[date]
+    classification: DenialClassification
+    # draft_appeal
+    appeal_letter: Optional[str]
+    # persist
+    denial_id: uuid.UUID
+    already_existed: bool
+    result: dict
