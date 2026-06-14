@@ -29,7 +29,7 @@ export function useInView<T extends HTMLElement = HTMLDivElement>(
           observer.disconnect();
         }
       },
-      { threshold: 0.15, ...options },
+      { threshold: 0.1, rootMargin: "0px 0px -30px 0px", ...options },
     );
     observer.observe(el);
     return () => observer.disconnect();
