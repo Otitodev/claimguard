@@ -15,6 +15,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { Hero } from "@/components/marketing/hero";
+import { AnimatedStat } from "@/components/marketing/animated-stat";
 import { Faq } from "@/components/marketing/faq";
 import { Reveal } from "@/components/marketing/reveal";
 import { WaitlistForm } from "@/components/marketing/waitlist-form";
@@ -125,7 +126,7 @@ export default function LandingPage() {
       <Hero />
 
       {/* Problem */}
-      <section className="border-b">
+      <section className="border-b border-border/50">
         <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6 lg:py-28">
           <Reveal className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -161,7 +162,7 @@ export default function LandingPage() {
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="border-b bg-muted/30">
+      <section id="how-it-works" className="border-b border-border/50 bg-muted/30">
         <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6 lg:py-28">
           <Reveal className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -196,7 +197,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="border-b">
+      <section id="features" className="border-b border-border/50">
         <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6 lg:py-28">
           <Reveal className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -227,28 +228,22 @@ export default function LandingPage() {
       </section>
 
       {/* Outcomes */}
-      <section className="border-b bg-primary/5">
-        <div className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6">
-          <div className="grid gap-8 md:grid-cols-3">
-            {OUTCOMES.map((item, i) => (
-              <Reveal
-                key={item.stat}
-                delay={i * 100}
-                className="flex flex-col items-center gap-2 text-center"
-              >
-                <span className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  <HugeiconsIcon icon={item.icon} className="size-5" />
-                </span>
-                <p className="text-2xl font-semibold tracking-tight">
-                  {item.stat}
-                </p>
-                <p className="max-w-xs text-sm text-muted-foreground">
-                  {item.label}
-                </p>
-              </Reveal>
-            ))}
+      <section className="border-b border-border/50 bg-background">
+        <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6 lg:py-28">
+          <Reveal className="mx-auto mb-12 max-w-2xl text-center">
+            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+              Real results from denial automation
+            </h2>
+            <p className="mt-3 text-muted-foreground">
+              What ClaimGuard delivers for billing teams.
+            </p>
+          </Reveal>
+          <div className="grid gap-10 md:grid-cols-3">
+            <AnimatedStat value={63} suffix="%" label="Average denial recovery rate" />
+            <AnimatedStat value={3} suffix=" min" label="From EOB upload to appeal draft" />
+            <AnimatedStat value={0} label="Missed deadlines with automated tracking" />
           </div>
-          <p className="mt-8 text-center text-xs text-muted-foreground">
+          <p className="mt-10 text-center text-xs text-muted-foreground">
             Illustrative outcomes based on the ClaimGuard workflow.
           </p>
         </div>
@@ -257,7 +252,7 @@ export default function LandingPage() {
       <Faq />
 
       {/* CTA / demo request */}
-      <section id="demo" className="border-b">
+      <section id="demo" className="border-b border-border/50">
         <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6 lg:py-28">
           <Reveal className="mx-auto mb-10 max-w-2xl text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
