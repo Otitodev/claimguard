@@ -33,7 +33,7 @@ type NavItem = {
 };
 
 const items: NavItem[] = [
-  { title: "Home", href: "/", icon: Home09Icon },
+  { title: "Home", href: "/dashboard", icon: Home09Icon },
   { title: "Needs Action", href: "/needs-action", icon: Alert02Icon, badge: true },
   { title: "Claims", href: "/claims", icon: Invoice03Icon },
   { title: "Upload", href: "/upload", icon: CloudUploadIcon },

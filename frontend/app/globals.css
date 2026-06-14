@@ -3,6 +3,7 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant js (&:is(.js *));
 
 @theme inline {
     --font-heading: var(--font-sans);
@@ -141,4 +142,24 @@
   html {
     @apply font-sans;
     }
+}
+
+@keyframes blob-drift {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  50% {
+    transform: translateX(-50%) translateY(2rem) scale(1.1);
+  }
+}
+
+.animate-blob-drift {
+  animation: blob-drift 14s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-blob-drift {
+    animation: none;
+  }
 }

@@ -31,6 +31,13 @@ export default function RootLayout({
       className={cn("antialiased", fontMono.variable, "font-sans", geist.variable)}
     >
       <body>
+        {/* Mark JS as active before paint so scroll-reveal only hides content
+            when JS can reveal it again — no-JS visitors see everything. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "document.documentElement.classList.add('js')",
+          }}
+        />
         <ThemeProvider>
           <TooltipProvider delayDuration={300}>{children}</TooltipProvider>
           <Toaster richColors position="top-right" />
