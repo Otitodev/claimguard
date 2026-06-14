@@ -16,6 +16,7 @@ import {
 
 import { Hero } from "@/components/marketing/hero";
 import { Faq } from "@/components/marketing/faq";
+import { Reveal } from "@/components/marketing/reveal";
 import { WaitlistForm } from "@/components/marketing/waitlist-form";
 import {
   Card,
@@ -126,7 +127,7 @@ export default function LandingPage() {
       {/* Problem */}
       <section className="border-b">
         <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6 lg:py-28">
-          <div className="mx-auto mb-12 max-w-2xl text-center">
+          <Reveal className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
               Denials are draining your bottom line
             </h2>
@@ -134,11 +135,12 @@ export default function LandingPage() {
               Billing teams lose real revenue to denials that are too slow,
               too manual, and too easy to miss.
             </p>
-          </div>
+          </Reveal>
           <div className="grid gap-4 md:grid-cols-3">
-            {PROBLEMS.map((item) => (
-              <Card key={item.title}>
-                <CardHeader>
+            {PROBLEMS.map((item, i) => (
+              <Reveal key={item.title} delay={i * 75}>
+                <Card className="h-full transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg">
+                  <CardHeader>
                   <span
                     className={`flex size-10 items-center justify-center rounded-xl bg-muted ${item.tone}`}
                   >
@@ -146,12 +148,13 @@ export default function LandingPage() {
                   </span>
                   <CardTitle className="mt-3 text-lg">{item.title}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {item.body}
-                  </p>
-                </CardContent>
-              </Card>
+                  <CardContent>
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      {item.body}
+                    </p>
+                  </CardContent>
+                </Card>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -160,7 +163,7 @@ export default function LandingPage() {
       {/* How it works */}
       <section id="how-it-works" className="border-b bg-muted/30">
         <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6 lg:py-28">
-          <div className="mx-auto mb-12 max-w-2xl text-center">
+          <Reveal className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
               From denial to recovery in three steps
             </h2>
@@ -168,10 +171,10 @@ export default function LandingPage() {
               The same parse → classify → draft pipeline your team would run by
               hand, done automatically.
             </p>
-          </div>
+          </Reveal>
           <div className="grid gap-6 md:grid-cols-3">
             {STEPS.map((step, i) => (
-              <div key={step.title} className="flex flex-col gap-4">
+              <Reveal key={step.title} delay={i * 100} className="flex flex-col gap-4">
                 <div className="flex items-center gap-3">
                   <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
                     <HugeiconsIcon icon={step.icon} className="size-5" />
@@ -186,7 +189,7 @@ export default function LandingPage() {
                     {step.body}
                   </p>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -195,27 +198,29 @@ export default function LandingPage() {
       {/* Features */}
       <section id="features" className="border-b">
         <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6 lg:py-28">
-          <div className="mx-auto mb-12 max-w-2xl text-center">
+          <Reveal className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
               Everything you need to work denials
             </h2>
             <p className="mt-3 text-muted-foreground">
               Built for billing teams, from first denial to recovered payment.
             </p>
-          </div>
+          </Reveal>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((feature) => (
-              <Card key={feature.title}>
-                <CardHeader>
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <HugeiconsIcon icon={feature.icon} className="size-5" />
-                  </span>
-                  <CardTitle className="mt-3 text-base">
-                    {feature.title}
-                  </CardTitle>
-                  <CardDescription>{feature.body}</CardDescription>
-                </CardHeader>
-              </Card>
+            {FEATURES.map((feature, i) => (
+              <Reveal key={feature.title} delay={(i % 3) * 75}>
+                <Card className="h-full transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg">
+                  <CardHeader>
+                    <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <HugeiconsIcon icon={feature.icon} className="size-5" />
+                    </span>
+                    <CardTitle className="mt-3 text-base">
+                      {feature.title}
+                    </CardTitle>
+                    <CardDescription>{feature.body}</CardDescription>
+                  </CardHeader>
+                </Card>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -225,9 +230,10 @@ export default function LandingPage() {
       <section className="border-b bg-primary/5">
         <div className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6">
           <div className="grid gap-8 md:grid-cols-3">
-            {OUTCOMES.map((item) => (
-              <div
+            {OUTCOMES.map((item, i) => (
+              <Reveal
                 key={item.stat}
+                delay={i * 100}
                 className="flex flex-col items-center gap-2 text-center"
               >
                 <span className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -239,7 +245,7 @@ export default function LandingPage() {
                 <p className="max-w-xs text-sm text-muted-foreground">
                   {item.label}
                 </p>
-              </div>
+              </Reveal>
             ))}
           </div>
           <p className="mt-8 text-center text-xs text-muted-foreground">
@@ -253,7 +259,7 @@ export default function LandingPage() {
       {/* CTA / demo request */}
       <section id="demo" className="border-b">
         <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6 lg:py-28">
-          <div className="mx-auto mb-10 max-w-2xl text-center">
+          <Reveal className="mx-auto mb-10 max-w-2xl text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
               <HugeiconsIcon
                 icon={DollarCircleIcon}
@@ -268,8 +274,10 @@ export default function LandingPage() {
               Request a demo and we&apos;ll show you how much of your denied
               revenue ClaimGuard can help you recover.
             </p>
-          </div>
-          <WaitlistForm />
+          </Reveal>
+          <Reveal delay={100}>
+            <WaitlistForm />
+          </Reveal>
         </div>
       </section>
     </>

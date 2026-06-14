@@ -15,10 +15,10 @@ export function Hero() {
       {/* soft brand wash behind the hero */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-40 left-1/2 -z-10 size-[42rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
+        className="animate-blob-drift pointer-events-none absolute -top-40 left-1/2 -z-10 size-[42rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
       />
       <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-20 md:px-6 lg:grid-cols-2 lg:py-28">
-        <div className="flex flex-col items-start gap-6">
+        <div className="flex animate-in flex-col items-start gap-6 fade-in slide-in-from-bottom-4 duration-700 [animation-delay:100ms] [animation-fill-mode:backwards] motion-reduce:animate-none">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
             <HugeiconsIcon icon={SparklesIcon} className="size-3.5 text-primary" />
             AI-powered denial workflow for billing teams
@@ -69,7 +69,7 @@ export function Hero() {
 /** Static product mock built from the real design system — no backend call. */
 function HeroPreview() {
   return (
-    <div className="relative">
+    <div className="relative animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:300ms] [animation-fill-mode:backwards] motion-reduce:animate-none">
       <div className="rounded-4xl bg-card p-5 shadow-xl ring-1 ring-foreground/5 dark:ring-foreground/10">
         <div className="mb-4 flex items-center justify-between">
           <div>

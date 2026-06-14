@@ -1,6 +1,8 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 
+import { Reveal } from "@/components/marketing/reveal";
+
 const FAQS = [
   {
     q: "How does ClaimGuard know why a claim was denied?",
@@ -28,20 +30,20 @@ export function Faq() {
   return (
     <section id="faq" className="border-b">
       <div className="mx-auto w-full max-w-3xl px-4 py-20 md:px-6 lg:py-28">
-        <div className="mb-10 text-center">
+        <Reveal className="mb-10 text-center">
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             Frequently asked questions
           </h2>
           <p className="mt-3 text-muted-foreground">
             Everything billing teams ask before getting started.
           </p>
-        </div>
+        </Reveal>
         <div className="flex flex-col gap-3">
-          {FAQS.map((item) => (
-            <details
-              key={item.q}
-              className="group rounded-2xl border border-border bg-card px-5 py-4 shadow-sm ring-1 ring-foreground/5 dark:ring-foreground/10"
-            >
+          {FAQS.map((item, i) => (
+            <Reveal key={item.q} delay={i * 60}>
+              <details
+                className="group rounded-2xl border border-border bg-card px-5 py-4 shadow-sm ring-1 ring-foreground/5 dark:ring-foreground/10"
+              >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left font-medium">
                 {item.q}
                 <HugeiconsIcon
@@ -52,7 +54,8 @@ export function Faq() {
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                 {item.a}
               </p>
-            </details>
+              </details>
+            </Reveal>
           ))}
         </div>
       </div>
