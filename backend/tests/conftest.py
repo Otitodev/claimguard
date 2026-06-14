@@ -6,13 +6,20 @@ running pytest. A fake chat model stands in for the LLM so the pipeline and API
 run without a real key.
 """
 
-from datetime import date
+import os
 
-import pytest
+# Pin tests to the local Docker Postgres even when .env points the app at Aurora
+# (DB_IAM_AUTH=true). Env vars override .env in pydantic-settings, and this must
+# run before app.config/app.db are imported below (the engine is built at import).
+os.environ["DB_IAM_AUTH"] = "false"
 
-from app.db import SessionLocal, init_db
-from app.models import Practice
-from app.schemas import DenialClassification, ExtractedEOB
+from datetime import date  # noqa: E402
+
+import pytest  # noqa: E402
+
+from app.db import SessionLocal, init_db  # noqa: E402
+from app.models import Practice  # noqa: E402
+from app.schemas import DenialClassification, ExtractedEOB  # noqa: E402
 
 
 class _Structured:

@@ -14,3 +14,7 @@ agentmail>=0.0.30
 svix>=1.40
 pytest>=8.3
 httpx>=0.28
+# Aurora free-tier IAM auth: token minting (boto3) + public-DNS resolution of
+# the express internet-access-gateway endpoint (dnspython).
+boto3>=1.34
+dnspython>=2.6

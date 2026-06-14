@@ -107,6 +107,73 @@ account and a public tunnel so their servers can reach this backend.
 Without a secret set, the handler skips signature verification (dev only). The
 webhook path is unit-tested with mocks (`tests/test_webhooks.py`).
 
+## 9. Aurora deploy (AWS free tier)
+
+The same backend runs against Amazon Aurora PostgreSQL. On the **AWS free-tier
+plan**, Aurora must be created with *express configuration*, which behaves very
+differently from a standard cluster — `app/db.py` handles those differences
+behind the `DB_IAM_AUTH` flag (local Docker is unaffected when it's `false`).
+
+**Provision** (one CLI call; free tier requires `--with-express-configuration`):
+
+```bash
+aws rds create-db-cluster \
+  --db-cluster-identifier my-aurora-postgres-cluster \
+  --engine aurora-postgresql \
+  --master-username dbadmin \
+  --with-express-configuration
+# wait for: aws rds describe-db-clusters --db-cluster-identifier my-aurora-postgres-cluster \
+#             --query "DBClusters[0].Status"  ->  "available"
+```
+
+What express configuration means (and how the backend copes):
+
+- **No VPC / security group / public-access flag.** Access is via a managed
+  **internet access gateway** — publicly reachable, no bastion/VPN. The endpoint
+  resolves through a `*.rdsrelay.alameda.aws.dev` CNAME that some local/ISP
+  resolvers fail to resolve, so set `DB_DNS_SERVERS=8.8.8.8,1.1.1.1` and the app
+  resolves it via public DNS and connects by IP (with the hostname kept for TLS
+  SNI, which the gateway routes on).
+- **IAM authentication only** — no master password, no Secrets Manager. Every
+  new connection uses a freshly minted ~15-min RDS IAM token as the password
+  over TLS. The IAM principal needs `rds-db:connect`, e.g.
+  `arn:aws:rds-db:<region>:<account>:dbuser:<cluster-resource-id>/dbadmin`
+  (get the resource id from `describe-db-clusters ... DbClusterResourceId`).
+- **The gateway cycles connections** (idle reaping without a clean TCP reset),
+  so the engine uses `NullPool` — a fresh, freshly-tokened connection per
+  request with a connect-retry for transient resets. Reliable, but expect a
+  few seconds per request (full cross-Region TLS connect each time).
+
+**Point the backend at Aurora** — in `.env`:
+
+```bash
+DB_IAM_AUTH=true
+DB_HOST=<cluster-writer-endpoint>   # describe-db-clusters ... Endpoint
+DB_USER=dbadmin
+DB_NAME=postgres
+AWS_REGION=<region>                 # e.g. eu-north-1
+DB_DNS_SERVERS=8.8.8.8,1.1.1.1
+```
+
+AWS credentials must be configured (`aws configure`) so boto3 can sign tokens —
+token generation is local SigV4, no extra network call. `boto3` and `dnspython`
+are in `requirements.txt`.
+
+**Create schema + seed, then run** (same commands, now targeting Aurora):
+
+```bash
+python seed.py --reset      # create_all + seed against Aurora
+uvicorn app.main:app
+```
+
+`pytest` always runs against the local Docker Postgres regardless of
+`DB_IAM_AUTH` (pinned in `tests/conftest.py`), so the suite stays fast and never
+touches the cluster.
+
+Free-tier limits: ≤ 4 ACU and ≤ 1 GB storage per cluster, max 2 clusters / 2
+instances, IAM-auth only, and the VPC-only features (RDS Proxy, Data API with
+password auth, Query Editor) are unavailable.
+
 ## Layout
 
 - `app/llm/` — provider abstraction + extract / classify / draft
@@ -119,6 +186,7 @@ webhook path is unit-tested with mocks (`tests/test_webhooks.py`).
 
 ## Out of scope (this build)
 
-Next.js frontend lives in `../frontend`. Aurora provisioning and auth are not
-yet built. AgentMail integration is built and mock-tested; only a live account +
-tunnel are needed to connect it (see §8).
+Next.js frontend lives in `../frontend`. App-level user auth is not built (the
+Aurora connection itself uses AWS IAM auth — see §9). AgentMail integration is
+built and mock-tested; only a live account + tunnel are needed to connect it
+(see §8).

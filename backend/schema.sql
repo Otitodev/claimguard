@@ -90,6 +90,14 @@ CREATE TABLE IF NOT EXISTS activity_log (
     created_at   timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS leads (
+    id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    email         text NOT NULL,
+    practice_name text,
+    source        text NOT NULL DEFAULT 'landing',
+    created_at    timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE INDEX IF NOT EXISTS ix_claims_practice ON claims(practice_id);
 CREATE INDEX IF NOT EXISTS ix_denials_claim ON denials(claim_id);
 CREATE INDEX IF NOT EXISTS ix_appeals_denial ON appeals(denial_id);

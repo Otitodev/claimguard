@@ -15,6 +15,10 @@ const fontMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
+  // Resolves relative OG/Twitter image URLs to absolute for social cards.
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  ),
   title: "ClaimGuard",
   description: "Automated insurance claim denial workflow for medical practices",
 }

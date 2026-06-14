@@ -1,6 +1,5 @@
+import Image from "next/image";
 import Link from "next/link";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Shield01Icon } from "@hugeicons/core-free-icons";
 
 import { cn } from "@/lib/utils";
 
@@ -14,15 +13,19 @@ export function Logo({
   return (
     <Link
       href={href}
-      className={cn(
-        "flex items-center gap-2 font-semibold tracking-tight",
-        className,
-      )}
+      aria-label="ClaimGuard home"
+      className={cn("inline-flex items-center", className)}
     >
-      <span className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-        <HugeiconsIcon icon={Shield01Icon} className="size-5" />
-      </span>
-      <span className="text-base">ClaimGuard</span>
+      {/* Full lockup (mark + wordmark). SVG needs no optimization. */}
+      <Image
+        src="/full-logo.svg"
+        alt="ClaimGuard"
+        width={1310}
+        height={404}
+        priority
+        unoptimized
+        className="h-7 w-auto"
+      />
     </Link>
   );
 }

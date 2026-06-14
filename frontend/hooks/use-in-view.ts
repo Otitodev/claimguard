@@ -15,8 +15,10 @@ export function useInView<T extends HTMLElement = HTMLDivElement>(
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    // No IntersectionObserver (or already revealed) → show immediately.
+    // No IntersectionObserver (old browser / test env) → show immediately.
+    // Intentional one-time sync to a browser capability, not a render cascade.
     if (typeof IntersectionObserver === "undefined") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInView(true);
       return;
     }

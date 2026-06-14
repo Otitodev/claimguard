@@ -5,14 +5,17 @@ The two extraction/classification models double as the schema passed to
 output. The rest are API response shapes.
 """
 
+import re
 import uuid
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 Classification = Literal["resubmit", "appeal", "write_off"]
+
+_EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 
 
 # --- LLM structured-output schemas (TRD §7) ---------------------------------
@@ -146,3 +149,36 @@ class AppealUpdate(BaseModel):
     letter_text: Optional[str] = None
     status: Optional[Literal["drafted", "submitted", "won", "lost", "pending"]] = None
     recovered_amount: Optional[Decimal] = None
+
+
+# --- Lead capture (marketing landing page) -----------------------------------
+
+
+class LeadCreate(BaseModel):
+    email: str
+    practice_name: Optional[str] = None
+
+    @field_validator("email")
+    @classmethod
+    def _valid_email(cls, v: str) -> str:
+        v = v.strip()
+        if not _EMAIL_RE.match(v):
+            raise ValueError("invalid email address")
+        return v
+
+    @field_validator("practice_name")
+    @classmethod
+    def _clean_practice(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return None
+        v = v.strip()
+        return v or None
+
+
+class LeadCreated(BaseModel):
+    id: uuid.UUID
+    email: str
+    practice_name: Optional[str]
+    created_at: datetime
+
+    model_config = {"from_attributes": True}

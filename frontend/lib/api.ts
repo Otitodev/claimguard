@@ -66,6 +66,18 @@ export async function uploadClaim(
   return res.json() as Promise<UploadResult>;
 }
 
+export async function submitLead(
+  email: string,
+  practiceName?: string,
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/leads`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, practice_name: practiceName || null }),
+  });
+  if (!res.ok) throw new Error(`lead submit failed: ${res.status}`);
+}
+
 export async function updateAppeal(
   appealId: string,
   payload: {

@@ -8,6 +8,7 @@ import {
   CheckmarkCircle02Icon,
 } from "@hugeicons/core-free-icons";
 
+import { submitLead } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,18 +18,25 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export function WaitlistForm() {
   const [email, setEmail] = useState("");
   const [practice, setPractice] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!EMAIL_RE.test(email)) {
       toast.error("Please enter a valid work email.");
       return;
     }
-    // No lead-capture endpoint exists yet — submit client-side and confirm.
-    // TODO: POST to a backend waitlist endpoint when one is available.
-    setSubmitted(true);
-    toast.success("You're on the list — we'll be in touch shortly.");
+    setSubmitting(true);
+    try {
+      await submitLead(email, practice);
+      setSubmitted(true);
+      toast.success("You're on the list — we'll be in touch shortly.");
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (submitted) {
@@ -73,9 +81,11 @@ export function WaitlistForm() {
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
-      <Button type="submit" size="lg" className="w-full">
-        Request a demo
-        <HugeiconsIcon icon={ArrowRight01Icon} data-icon="inline-end" />
+      <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+        {submitting ? "Submitting…" : "Request a demo"}
+        {!submitting && (
+          <HugeiconsIcon icon={ArrowRight01Icon} data-icon="inline-end" />
+        )}
       </Button>
       <p className="text-center text-xs text-muted-foreground">
         No credit card required. We&apos;ll only use your email to set up the demo.

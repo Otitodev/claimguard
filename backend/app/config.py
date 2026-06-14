@@ -34,5 +34,23 @@ class Settings(BaseSettings):
     # AgentMail REST base.
     agentmail_base_url: str = "https://api.agentmail.to/v0"
 
+    # --- Aurora (free-tier "express configuration") IAM auth ------------------
+    # Free-tier Aurora clusters have no VPC/password: access is via a managed
+    # internet access gateway using short-lived RDS IAM auth tokens over TLS.
+    # When db_iam_auth is true, db.py mints a token per connection instead of
+    # using the password in database_url. Local Docker dev leaves this false.
+    db_iam_auth: bool = False
+    db_host: str | None = None  # cluster writer endpoint (also the TLS SNI name)
+    db_port: int = 5432
+    db_user: str = "dbadmin"
+    db_name: str = "postgres"
+    db_sslmode: str = "require"
+    aws_region: str | None = None
+    # Comma-separated public DNS servers used to resolve db_host. The express
+    # gateway lives in a `.aws.dev` zone that some local/ISP resolvers fail to
+    # resolve; setting this routes the lookup around them. Empty -> system
+    # resolver (and no hostaddr override).
+    db_dns_servers: str = ""
+
 
 settings = Settings()

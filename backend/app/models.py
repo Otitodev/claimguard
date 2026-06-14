@@ -196,3 +196,19 @@ class ActivityLog(Base):
     )
 
     claim: Mapped[Claim] = relationship(back_populates="activity")
+
+
+class Lead(Base):
+    """A demo / waitlist request captured from the marketing landing page."""
+
+    __tablename__ = "leads"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    email: Mapped[str] = mapped_column(Text, nullable=False)
+    practice_name: Mapped[str | None] = mapped_column(Text)
+    source: Mapped[str] = mapped_column(Text, nullable=False, default="landing")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
