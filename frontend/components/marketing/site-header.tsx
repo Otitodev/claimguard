@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Logo } from "@/components/marketing/logo";
+import { MobileNav } from "@/components/marketing/mobile-nav";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 
@@ -28,9 +29,10 @@ export function SiteHeader() {
         </nav>
         <div className="ml-auto flex items-center gap-2">
           <ModeToggle />
-          <Button asChild>
+          <Button asChild className="hidden md:inline-flex">
             <Link href="#demo">Request a demo</Link>
           </Button>
+          <MobileNav items={NAV} />
         </div>
       </div>
     </header>
