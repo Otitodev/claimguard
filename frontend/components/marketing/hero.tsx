@@ -19,7 +19,7 @@ export function Hero() {
         aria-hidden
         className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-background/60 via-background/30 to-background"
       />
-      <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-20 md:px-6 lg:grid-cols-2 lg:py-28">
+      <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-20 md:px-6 lg:grid-cols-2 lg:py-28">
         <div className="flex animate-in flex-col items-start gap-6 fade-in slide-in-from-bottom-4 duration-700 [animation-delay:100ms] [animation-fill-mode:backwards] motion-reduce:animate-none">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
             <HugeiconsIcon icon={SparklesIcon} className="size-3.5 text-primary" />
