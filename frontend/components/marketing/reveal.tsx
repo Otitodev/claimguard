@@ -27,10 +27,11 @@ export function Reveal({
       style={delay ? { transitionDelay: `${delay}ms` } : undefined}
       className={cn(
         "transition-all duration-700 ease-out will-change-[opacity,transform]",
-        // Visible by default; the hidden start state only applies when JS is
-        // active (.js on <html>), so no-JS visitors always see the content.
-        !inView && "js:translate-y-4 js:opacity-0",
-        "motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none",
+        // Hidden start state only applies when JS is active;
+        // no-JS visitors always see the content.
+        // Only translate — keep opacity 1 so content is always readable
+        !inView && "js:translate-y-4",
+        "motion-reduce:translate-y-0 motion-reduce:transition-none",
         className,
       )}
     >
