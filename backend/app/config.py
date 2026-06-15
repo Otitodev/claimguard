@@ -17,6 +17,11 @@ class Settings(BaseSettings):
         "postgresql+psycopg://claimguard:claimguard@localhost:5432/claimguard"
     )
 
+    # Comma-separated CORS origins allowed to call the API from a browser.
+    # Defaults to local Next.js dev; in production set this to include the
+    # deployed Vercel domain (e.g. "https://claimguard.vercel.app").
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+
     llm_provider: str = "anthropic"
     llm_model: str = "claude-opus-4-8"
 

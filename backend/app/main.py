@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .config import settings
 from .db import get_session
 from .models import Practice
 from .api import analytics, appeals, claims, denials, leads, webhooks
@@ -10,13 +11,11 @@ from .api import analytics, appeals, claims, denials, leads, webhooks
 app = FastAPI(title="ClaimGuard API", version="0.1.0")
 
 # Allow the Next.js frontend (browser-side upload + appeal mutations) to call
-# the API cross-origin during local dev.
+# the API cross-origin. Origins come from CORS_ORIGINS (comma-separated) so the
+# deployed Vercel domain can be added without a code change.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=[o.strip() for o in settings.cors_origins.split(",") if o.strip()],
     allow_methods=["*"],
     allow_headers=["*"],
 )

@@ -1,0 +1,14 @@
+# Railway service config for the ClaimGuard backend.
+# Set the service's Root Directory to `backend` in the Railway dashboard so this
+# file (and requirements.txt) are picked up. Build uses Nixpacks; the Python
+# version is pinned via .python-version (deps lack 3.13/3.14 wheels).
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+healthcheckPath = "/health"
+healthcheckTimeout = 120
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
