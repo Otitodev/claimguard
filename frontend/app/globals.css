@@ -158,8 +158,46 @@
   animation: blob-drift 14s ease-in-out infinite;
 }
 
+/* CTA button pulse glow */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px oklch(0.488 0.243 264 / 0.25); }
+  50% { box-shadow: 0 0 40px oklch(0.488 0.243 264 / 0.45); }
+}
+.cta-glow {
+  animation: pulse-glow 2.5s ease-in-out infinite;
+}
+.cta-glow:hover {
+  animation: none;
+  box-shadow: 0 0 30px oklch(0.488 0.243 264 / 0.5);
+}
+
+/* Section dividers with gradient */
+.section-divider {
+  border-color: transparent;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(0.488 0.243 264 / 0.2) 20%,
+    oklch(0.488 0.243 264 / 0.5) 50%,
+    oklch(0.488 0.243 264 / 0.2) 80%,
+    transparent 100%
+  );
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+}
+
+/* FAQ smooth reveal */
+details[open] summary ~ * {
+  animation: detail-reveal 0.3s ease-out;
+}
+@keyframes detail-reveal {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-blob-drift {
+  .animate-blob-drift,
+  .cta-glow {
     animation: none;
   }
 }

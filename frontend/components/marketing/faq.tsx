@@ -28,7 +28,7 @@ const FAQS = [
 
 export function Faq() {
   return (
-    <section id="faq" className="border-b">
+    <section id="faq" className="border-b border-border/50">
       <div className="mx-auto w-full max-w-3xl px-4 py-20 md:px-6 lg:py-28">
         <Reveal className="mb-10 text-center">
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">

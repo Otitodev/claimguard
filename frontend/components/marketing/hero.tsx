@@ -6,18 +6,20 @@ import {
   SparklesIcon,
 } from "@hugeicons/core-free-icons";
 
+import { VantaDots } from "@/components/marketing/vanta-dots";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden border-b">
-      {/* soft brand wash behind the hero */}
+    <section className="relative overflow-hidden border-b border-border/50">
+      <VantaDots />
+      {/* overlay gradient to ensure text readability over the dots */}
       <div
         aria-hidden
-        className="animate-blob-drift pointer-events-none absolute -top-40 left-1/2 -z-10 size-[42rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
+        className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-background/60 via-background/30 to-background"
       />
-      <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-20 md:px-6 lg:grid-cols-2 lg:py-28">
+      <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-8 px-4 py-12 md:px-6 md:py-16 lg:grid-cols-2 lg:py-20">
         <div className="flex animate-in flex-col items-start gap-6 fade-in slide-in-from-bottom-4 duration-700 [animation-delay:100ms] [animation-fill-mode:backwards] motion-reduce:animate-none">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
             <HugeiconsIcon icon={SparklesIcon} className="size-3.5 text-primary" />
@@ -33,7 +35,7 @@ export function Hero() {
             misses fewer deadlines, and collects more of what you&apos;re owed.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg">
+            <Button asChild size="lg" className="cta-glow">
               <Link href="#demo">
                 Request a demo
                 <HugeiconsIcon icon={ArrowRight01Icon} data-icon="inline-end" />
