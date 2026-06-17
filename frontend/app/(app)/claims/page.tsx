@@ -1,5 +1,5 @@
 import { ClaimsTable } from "@/components/claims-table";
-import { api, defaultPractice, safe } from "@/lib/api";
+import { api, defaultPractice, safe } from "@/lib/api-server";
 
 export default async function ClaimsPage() {
   const practice = await defaultPractice();

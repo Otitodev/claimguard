@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from .config import settings
 from .db import get_session
 from .models import Practice
-from .api import analytics, appeals, claims, denials, leads, webhooks
+from .api import analytics, appeals, claims, denials, leads, me, webhooks
 
 app = FastAPI(title="ClaimGuard API", version="0.1.0")
 
@@ -25,6 +25,7 @@ app.include_router(appeals.router)
 app.include_router(denials.router)
 app.include_router(analytics.router)
 app.include_router(leads.router)
+app.include_router(me.router)
 app.include_router(webhooks.router)
 
 

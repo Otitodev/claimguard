@@ -4,6 +4,7 @@ import { Alert02Icon } from "@hugeicons/core-free-icons";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { ModeToggle } from "@/components/mode-toggle";
+import { UserMenu } from "@/components/user-menu";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -11,7 +12,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { api, defaultPractice, safe } from "@/lib/api";
+import { api, defaultPractice, safe } from "@/lib/api-server";
 
 export default async function AppLayout({
   children,
@@ -37,8 +38,9 @@ export default async function AppLayout({
             </span>
             <span className="text-xs text-muted-foreground">Claims ledger</span>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-1">
             <ModeToggle />
+            <UserMenu />
           </div>
         </header>
         <main className="flex-1 p-4 md:p-6">

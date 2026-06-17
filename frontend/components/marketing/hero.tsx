@@ -19,20 +19,20 @@ export function Hero() {
         aria-hidden
         className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-background/60 via-background/30 to-background"
       />
-      <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-8 px-4 py-12 md:px-6 md:py-16 lg:grid-cols-2 lg:py-20">
+      <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-8 px-4 pb-12 pt-28 md:px-6 md:pb-16 md:pt-36 lg:grid-cols-2 lg:pb-20">
         <div className="flex animate-in flex-col items-start gap-6 fade-in slide-in-from-bottom-4 duration-700 [animation-delay:100ms] [animation-fill-mode:backwards] motion-reduce:animate-none">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
             <HugeiconsIcon icon={SparklesIcon} className="size-3.5 text-primary" />
-            AI-powered denial workflow for billing teams
+            Stop losing revenue to ignored denials
           </span>
           <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl">
-            Turn denied claims into{" "}
-            <span className="text-primary">recovered revenue</span>
+            Stop losing $80K–$150K/year on{" "}
+            <span className="text-primary">insurance denials</span>
           </h1>
           <p className="max-w-xl text-lg text-muted-foreground">
-            ClaimGuard reads your EOBs, explains exactly why each claim was
-            denied, and drafts the appeal for you — so your team files faster,
-            misses fewer deadlines, and collects more of what you&apos;re owed.
+            ClaimGuard automates EOB processing for small medical practices. AI
+            classifies denials and drafts professional appeals so your team can
+            focus on patients, not paperwork.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg" className="cta-glow">
@@ -85,7 +85,7 @@ function HeroPreview() {
           <MockMetric label="Revenue at risk" value="$48,200" tone="denied" />
           <MockMetric label="Recovered this month" value="$31,750" tone="recovered" />
           <MockMetric label="Denial rate" value="12.4%" tone="pending" />
-          <MockMetric label="Open appeals" value="18" />
+          <MockMetric label="Appeals in progress" value="18" />
         </div>
 
         <div className="mt-4 rounded-2xl border border-border bg-muted/40 p-4">

@@ -1,12 +1,12 @@
-import uuid
 from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from ..auth import get_current_practice
 from ..db import get_session
-from ..models import Appeal, Claim, Denial, Patient, Payer
+from ..models import Appeal, Claim, Denial, Patient, Payer, Practice
 from ..schemas import NeedsActionItem
 
 router = APIRouter(tags=["denials"])
@@ -14,24 +14,27 @@ router = APIRouter(tags=["denials"])
 
 @router.get("/denials/needs-action", response_model=list[NeedsActionItem])
 def needs_action(
-    practice_id: uuid.UUID,
     within_days: int = 7,
+    practice: Practice = Depends(get_current_practice),
     session: Session = Depends(get_session),
 ) -> list[NeedsActionItem]:
-    """Drafted appeals not yet submitted, with a deadline within `within_days`
-    (TRD §8 — redefined to align with the auto-drafting pipeline).
+    """Drafted appeals with a deadline within `within_days`, plus submitted
+    appeals that are past their expected payer response date.
     """
     today = date.today()
     cutoff = today + timedelta(days=within_days)
 
-    stmt = (
+    items: list[NeedsActionItem] = []
+
+    # --- Drafted appeals nearing filing deadline ---
+    drafted_stmt = (
         select(Appeal, Denial, Claim, Patient, Payer)
         .join(Denial, Appeal.denial_id == Denial.id)
         .join(Claim, Denial.claim_id == Claim.id)
         .join(Patient, Claim.patient_id == Patient.id)
         .join(Payer, Claim.payer_id == Payer.id)
         .where(
-            Claim.practice_id == practice_id,
+            Claim.practice_id == practice.id,
             Appeal.status == "drafted",
             Denial.appeal_deadline.is_not(None),
             Denial.appeal_deadline <= cutoff,
@@ -39,8 +42,7 @@ def needs_action(
         .order_by(Denial.appeal_deadline.asc())
     )
 
-    items: list[NeedsActionItem] = []
-    for appeal, denial, claim, patient, payer in session.execute(stmt).all():
+    for appeal, denial, claim, patient, payer in session.execute(drafted_stmt).all():
         days_remaining = (
             (denial.appeal_deadline - today).days
             if denial.appeal_deadline
@@ -57,6 +59,48 @@ def needs_action(
                 denied_amount=denial.denied_amount,
                 appeal_deadline=denial.appeal_deadline,
                 days_remaining=days_remaining,
+                kind="deadline",
             )
         )
+
+    # --- Submitted appeals past expected response date ---
+    submitted_stmt = (
+        select(Appeal, Denial, Claim, Patient, Payer)
+        .join(Denial, Appeal.denial_id == Denial.id)
+        .join(Claim, Denial.claim_id == Claim.id)
+        .join(Patient, Claim.patient_id == Patient.id)
+        .join(Payer, Claim.payer_id == Payer.id)
+        .where(
+            Claim.practice_id == practice.id,
+            Appeal.status == "submitted",
+            Appeal.expected_response_date.is_not(None),
+            Appeal.expected_response_date <= today,
+        )
+        .order_by(Appeal.expected_response_date.asc())
+    )
+
+    for appeal, denial, claim, patient, payer in session.execute(submitted_stmt).all():
+        days_since = (
+            (today - appeal.submitted_date).days
+            if appeal.submitted_date
+            else None
+        )
+        items.append(
+            NeedsActionItem(
+                appeal_id=appeal.id,
+                denial_id=denial.id,
+                claim_id=claim.id,
+                patient_name=patient.name,
+                payer_name=payer.name,
+                denial_code=denial.denial_code,
+                denied_amount=denial.denied_amount,
+                appeal_deadline=denial.appeal_deadline,
+                days_remaining=None,
+                kind="overdue",
+                submitted_date=appeal.submitted_date,
+                expected_response_date=appeal.expected_response_date,
+                days_since_submission=days_since,
+            )
+        )
+
     return items

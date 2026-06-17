@@ -17,6 +17,7 @@ def classify_denial(
     billed_amount: Optional[Decimal],
     denied_amount: Optional[Decimal],
     payer_name: Optional[str],
+    policy_context: str = "",
 ) -> DenialClassification:
     from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -29,6 +30,8 @@ def classify_denial(
         f"Denied amount: {denied_amount if denied_amount is not None else 'unknown'}\n"
         f"Payer: {payer_name or 'unknown'}"
     )
+    if policy_context:
+        user += f"\n\nRelevant policy guidance:\n{policy_context}"
     structured = llm.with_structured_output(DenialClassification)
     return structured.invoke(
         [SystemMessage(content=CLASSIFY_DENIAL), HumanMessage(content=user)]

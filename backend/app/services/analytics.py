@@ -109,6 +109,34 @@ def summary(session, practice_id: uuid.UUID) -> AnalyticsSummary:
         for cat, amount in cat_rows
     ]
 
+    # appeals_in_progress: submitted appeals not yet resolved
+    appeals_in_progress = (
+        session.scalar(
+            select(func.count(Appeal.id))
+            .join(Denial, Appeal.denial_id == Denial.id)
+            .join(Claim, Denial.claim_id == Claim.id)
+            .where(
+                Claim.practice_id == practice_id,
+                Appeal.status == "submitted",
+            )
+        )
+        or 0
+    )
+
+    # avg_days_to_resolution for won/lost appeals
+    row = session.scalar(
+        select(func.avg(func.abs(Appeal.outcome_date - Appeal.submitted_date)))
+        .join(Denial, Appeal.denial_id == Denial.id)
+        .join(Claim, Denial.claim_id == Claim.id)
+        .where(
+            Claim.practice_id == practice_id,
+            Appeal.status.in_(("won", "lost")),
+            Appeal.submitted_date.is_not(None),
+            Appeal.outcome_date.is_not(None),
+        )
+    )
+    avg_days = round(float(row), 1) if row is not None else None
+
     return AnalyticsSummary(
         total_claims=total_claims,
         denial_rate=denial_rate,
@@ -117,4 +145,6 @@ def summary(session, practice_id: uuid.UUID) -> AnalyticsSummary:
         revenue_recovered_this_month=Decimal(str(revenue_recovered)),
         denial_rate_by_payer=denial_rate_by_payer,
         revenue_at_risk_by_category=revenue_at_risk_by_category,
+        appeals_in_progress=appeals_in_progress,
+        avg_days_to_resolution=avg_days,
     )

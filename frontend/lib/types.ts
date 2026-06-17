@@ -81,6 +81,10 @@ export interface NeedsActionItem {
   denied_amount: string | null;
   appeal_deadline: string | null;
   days_remaining: number | null;
+  kind: "deadline" | "overdue";
+  submitted_date: string | null;
+  expected_response_date: string | null;
+  days_since_submission: number | null;
 }
 
 export interface PayerRate {
@@ -103,6 +107,8 @@ export interface AnalyticsSummary {
   revenue_recovered_this_month: string;
   denial_rate_by_payer: PayerRate[];
   revenue_at_risk_by_category: CategoryRisk[];
+  appeals_in_progress: number;
+  avg_days_to_resolution: number | null;
 }
 
 export interface UploadResult {

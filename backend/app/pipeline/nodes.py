@@ -9,9 +9,11 @@ from datetime import timedelta
 from decimal import Decimal
 
 from ..llm.classify import classify_denial
+from ..llm.critique import critique_appeal
 from ..llm.draft import draft_appeal
 from ..llm.extract import extract_eob, pdf_to_text
-from ..models import Appeal, Claim, Denial
+from ..llm.policy import retrieve_policy
+from ..models import Appeal, Claim, Denial, Payer
 from ..services.persistence import (
     ensure_denial_code,
     find_existing_denial,
@@ -35,6 +37,7 @@ def _result(state, denial, classification, letter, already_existed) -> dict:
         "classification": classification.classification,
         "reason_summary": classification.reason_summary,
         "appeal_drafted": bool(letter) and classification.classification == "appeal",
+        "appeal_critique": state.get("appeal_critique"),
         "already_existed": already_existed,
     }
 
@@ -82,31 +85,51 @@ def make_match_claim(session, llm):
     return match_or_create_claim_node
 
 
-def make_classify(session, llm):
-    def classify_denial_node(state):
+def make_retrieve_policy(session, llm):
+    """Pick the primary denial code and retrieve grounding policy guidance for
+    it — RAG-style context the classify and draft nodes both consume."""
+
+    def retrieve_policy_node(state):
         ex = state["extracted"]
         primary = select_primary_code(session, ex.denial_codes)
         category = get_category(session, primary)
+        payer = session.get(Payer, state["payer_id"])
+        payer_type = payer.payer_type if payer else None
+        context = retrieve_policy(
+            session,
+            denial_code=primary,
+            category=category,
+            payer_type=payer_type,
+        )
+        return {
+            "primary_denial_code": primary,
+            "denial_category": category,
+            "payer_type": payer_type,
+            "policy_context": context,
+        }
+
+    return retrieve_policy_node
+
+
+def make_classify(session, llm):
+    def classify_denial_node(state):
+        ex = state["extracted"]
         claim = session.get(Claim, state["claim_id"])
         result = classify_denial(
             llm,
-            denial_code=primary,
-            category=category,
+            denial_code=state.get("primary_denial_code"),
+            category=state.get("denial_category"),
             cpt_codes=ex.cpt_codes,
             icd_codes=ex.icd_codes,
             billed_amount=claim.billed_amount,
             denied_amount=_to_decimal(ex.denied_amount),
             payer_name=state.get("payer_name"),
+            policy_context=state.get("policy_context", ""),
         )
         deadline = None
         if ex.denial_date is not None:
             deadline = ex.denial_date + timedelta(days=state["appeal_window_days"])
-        return {
-            "primary_denial_code": primary,
-            "denial_category": category,
-            "classification": result,
-            "appeal_deadline": deadline,
-        }
+        return {"classification": result, "appeal_deadline": deadline}
 
     return classify_denial_node
 
@@ -135,10 +158,43 @@ def make_draft(session, llm):
             reason_summary=cls.reason_summary,
             appeal_angle=cls.appeal_angle,
             payer_name=state.get("payer_name"),
+            policy_context=state.get("policy_context", ""),
         )
         return {"appeal_letter": letter}
 
     return draft_appeal_node
+
+
+def make_critique(session, llm):
+    """Self-review the drafted appeal against the denial reason + policy, and
+    swap in the model's own rewrite when the first draft is judged weak."""
+
+    def critique_appeal_node(state):
+        cls = state["classification"]
+        letter = state.get("appeal_letter")
+        if not letter:
+            return {}
+        critique = critique_appeal(
+            llm,
+            letter=letter,
+            reason_summary=cls.reason_summary,
+            appeal_angle=cls.appeal_angle,
+            policy_context=state.get("policy_context", ""),
+        )
+        out: dict = {
+            "appeal_critique": {
+                "adequate": critique.adequate,
+                "score": critique.score,
+                "issues": critique.issues,
+                "revised": False,
+            }
+        }
+        if not critique.adequate and critique.revised_letter:
+            out["appeal_letter"] = critique.revised_letter.strip()
+            out["appeal_critique"]["revised"] = True
+        return out
+
+    return critique_appeal_node
 
 
 def make_persist(session, llm):
@@ -206,7 +262,13 @@ def make_persist(session, llm):
             details={"classification": cls.classification},
         )
         if appeal:
-            log_activity(session, claim_id, "appeal_drafted", actor="ai")
+            log_activity(
+                session,
+                claim_id,
+                "appeal_drafted",
+                actor="ai",
+                details=state.get("appeal_critique"),
+            )
 
         return {
             "denial_id": denial.id,

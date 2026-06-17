@@ -5,6 +5,9 @@
 CREATE TABLE IF NOT EXISTS practices (
     id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     name                text NOT NULL,
+    -- Better Auth user id (JWT `sub`) that owns this practice; the API derives
+    -- the practice from the authenticated user. One practice per user.
+    owner_user_id       text UNIQUE,
     -- AgentMail email-in mapping (TRD §5): inbox dedicated to this practice.
     agentmail_inbox_id  text UNIQUE,
     agentmail_address   text,
@@ -76,6 +79,8 @@ CREATE TABLE IF NOT EXISTS appeals (
     submitted_date    date,
     outcome_date      date,
     recovered_amount  numeric(12, 2),
+    expected_response_date date,
+    status_updated_at timestamptz,
     created_at        timestamptz NOT NULL DEFAULT now()
 );
 

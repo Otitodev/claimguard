@@ -19,7 +19,7 @@ import pytest  # noqa: E402
 
 from app.db import SessionLocal, init_db  # noqa: E402
 from app.models import Practice  # noqa: E402
-from app.schemas import DenialClassification, ExtractedEOB  # noqa: E402
+from app.schemas import AppealCritique, DenialClassification, ExtractedEOB  # noqa: E402
 
 
 class _Structured:
@@ -34,16 +34,22 @@ class FakeChatModel:
     """Stands in for a LangChain chat model in tests."""
 
     def __init__(self, extracted: ExtractedEOB, classification: DenialClassification,
-                 letter: str = "Dear Reviewer,\n\nWe respectfully appeal...\n\nSincerely,"):
+                 letter: str = "Dear Reviewer,\n\nWe respectfully appeal...\n\nSincerely,",
+                 critique: AppealCritique | None = None):
         self._extracted = extracted
         self._classification = classification
         self._letter = letter
+        self._critique = critique or AppealCritique(
+            adequate=True, score=5, issues=[], revised_letter=None
+        )
 
     def with_structured_output(self, schema):
         if schema is ExtractedEOB:
             return _Structured(self._extracted)
         if schema is DenialClassification:
             return _Structured(self._classification)
+        if schema is AppealCritique:
+            return _Structured(self._critique)
         raise ValueError(f"unexpected schema: {schema}")
 
     def invoke(self, _messages):

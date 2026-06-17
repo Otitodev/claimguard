@@ -188,14 +188,17 @@ def seed(session) -> Practice:
             reason="The claim is missing required information and should be corrected and resubmitted.",
             classification="resubmit")
 
-    # 6: medical necessity -> appeal submitted
+    # 6: medical necessity -> appeal submitted (awaiting response, within window)
     c6 = _claim(session, practice=practice, patient=patients["David Okafor"], payer=aetna,
                 dos_days_ago=90, cpt=["72148"], icd=["M51.26"], billed=1200, status="appealed")
     d6 = _denial(session, claim=c6, payer=aetna, code="CO-167", denied=1200, denial_days_ago=45,
                  reason="The payer states the diagnosis is not covered for this lumbar MRI.",
                  classification="appeal")
+    submitted_6 = TODAY - timedelta(days=10)
     a6 = Appeal(denial_id=d6.id, letter_text="(seeded appeal letter)", status="submitted",
-                submitted_date=TODAY - timedelta(days=10))
+                submitted_date=submitted_6,
+                expected_response_date=submitted_6 + timedelta(days=45),
+                status_updated_at=TODAY - timedelta(days=10))
     session.add(a6)
     session.add(ActivityLog(claim_id=c6.id, action_type="appeal_submitted", actor="user"))
 
@@ -206,16 +209,20 @@ def seed(session) -> Practice:
             reason="This is an exact duplicate of a claim already paid.",
             classification="write_off")
 
-    # 8: appeal WON this month -> revenue_recovered_this_month + claim resolved
+    # 8: appeal WON -> revenue_recovered_this_month + claim resolved
     c8 = _claim(session, practice=practice, patient=patients["Robert Chen"], payer=bcbs,
                 dos_days_ago=120, cpt=["43239"], icd=["K21.9"], billed=2100, status="resolved")
     d8 = _denial(session, claim=c8, payer=bcbs, code="CO-151", denied=2100, denial_days_ago=80,
                  reason="The payer questioned the frequency of services; medical necessity was documented.",
                  classification="appeal")
+    submitted_8 = TODAY - timedelta(days=40)
+    won_8 = TODAY.replace(day=min(TODAY.day, 15))
     session.add(Appeal(denial_id=d8.id, letter_text="(seeded won appeal)", status="won",
-                       submitted_date=TODAY - timedelta(days=40),
-                       outcome_date=TODAY.replace(day=min(TODAY.day, 15)),
-                       recovered_amount=Decimal("2100")))
+                        submitted_date=submitted_8,
+                        outcome_date=won_8,
+                        expected_response_date=submitted_8 + timedelta(days=45),
+                        status_updated_at=won_8,
+                        recovered_amount=Decimal("2100")))
     session.add(ActivityLog(claim_id=c8.id, action_type="appeal_won", actor="user"))
 
     # 9: eligibility -> resubmit
@@ -241,14 +248,67 @@ def seed(session) -> Practice:
     d11 = _denial(session, claim=c11, payer=uhc, code="CO-109", denied=260, denial_days_ago=70,
                   reason="The payer maintains the claim is not covered under this plan.",
                   classification="appeal")
+    submitted_11 = TODAY - timedelta(days=50)
+    lost_11 = TODAY - timedelta(days=20)
     session.add(Appeal(denial_id=d11.id, letter_text="(seeded lost appeal)", status="lost",
-                       submitted_date=TODAY - timedelta(days=50),
-                       outcome_date=TODAY - timedelta(days=20)))
+                        submitted_date=submitted_11,
+                        outcome_date=lost_11,
+                        expected_response_date=submitted_11 + timedelta(days=45),
+                        status_updated_at=lost_11))
     session.add(ActivityLog(claim_id=c11.id, action_type="appeal_lost", actor="user"))
 
     # 12: clean paid claim
     _claim(session, practice=practice, patient=patients["James Whitfield"], payer=medicare,
            dos_days_ago=20, cpt=["99213"], icd=["I10"], billed=120, status="paid")
+
+    # 13: recently submitted (within expected response window — not overdue)
+    c13 = _claim(session, practice=practice, patient=patients["Maria Gonzalez"], payer=aetna,
+                 dos_days_ago=80, cpt=["97110"], icd=["M25.561"], billed=320, status="appealed")
+    d13 = _denial(session, claim=c13, payer=aetna, code="CO-50", denied=320, denial_days_ago=25,
+                  reason="The payer deems therapeutic exercise not medically necessary for knee pain.",
+                  classification="appeal")
+    submitted_13 = TODAY - timedelta(days=3)
+    session.add(Appeal(denial_id=d13.id, letter_text="(seeded appeal — recently submitted)", status="submitted",
+                        submitted_date=submitted_13,
+                        expected_response_date=submitted_13 + timedelta(days=45),
+                        status_updated_at=submitted_13))
+    session.add(ActivityLog(claim_id=c13.id, action_type="appeal_submitted", actor="user"))
+
+    # 14: submitted 55 days ago — past 45-day response window (overdue, amber)
+    c14 = _claim(session, practice=practice, patient=patients["Aisha Rahman"], payer=bcbs,
+                 dos_days_ago=110, cpt=["20553"], icd=["M79.1"], billed=680, status="appealed")
+    d14 = _denial(session, claim=c14, payer=bcbs, code="CO-167", denied=680, denial_days_ago=70,
+                  reason="Trigger point injections not covered for myalgia without imaging.",
+                  classification="appeal")
+    submitted_14 = TODAY - timedelta(days=55)
+    session.add(Appeal(denial_id=d14.id, letter_text="(seeded appeal — overdue 55 days)", status="submitted",
+                        submitted_date=submitted_14,
+                        expected_response_date=submitted_14 + timedelta(days=45),
+                        status_updated_at=submitted_14))
+    session.add(ActivityLog(claim_id=c14.id, action_type="appeal_submitted", actor="user"))
+
+    # 15: submitted 92 days ago — past response window by a lot (overdue, red)
+    c15 = _claim(session, practice=practice, patient=patients["Linda Park"], payer=uhc,
+                 dos_days_ago=160, cpt=["99205"], icd=["R51"], billed=380, status="appealed")
+    d15 = _denial(session, claim=c15, payer=uhc, code="CO-11", denied=380, denial_days_ago=110,
+                  reason="Payer says headache diagnosis does not support level-5 new patient visit.",
+                  classification="appeal")
+    submitted_15 = TODAY - timedelta(days=92)
+    session.add(Appeal(denial_id=d15.id, letter_text="(seeded appeal — overdue 92 days)", status="submitted",
+                        submitted_date=submitted_15,
+                        expected_response_date=submitted_15 + timedelta(days=45),
+                        status_updated_at=submitted_15))
+    session.add(ActivityLog(claim_id=c15.id, action_type="appeal_submitted", actor="user"))
+
+    # 16: medical necessity -> drafted, deadline tomorrow (urgent in Drafts section)
+    c16 = _claim(session, practice=practice, patient=patients["Robert Chen"], payer=medicare,
+                 dos_days_ago=175, cpt=["72141"], icd=["M54.16"], billed=760, status="appealed")
+    d16 = _denial(session, claim=c16, payer=medicare, code="CO-50", denied=760, denial_days_ago=176,
+                  reason="MRI cervical spine not deemed medically necessary for thoracic radiculopathy.",
+                  classification="appeal")
+    d16.appeal_deadline = TODAY + timedelta(days=1)
+    session.add(Appeal(denial_id=d16.id, letter_text="(seeded appeal — deadline tomorrow)", status="drafted"))
+    session.add(ActivityLog(claim_id=c16.id, action_type="appeal_drafted", actor="ai"))
 
     session.commit()
     return practice

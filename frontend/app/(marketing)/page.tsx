@@ -3,7 +3,6 @@ import {
   AiBrain01Icon,
   Analytics01Icon,
   ChartUpIcon,
-  CheckmarkBadge01Icon,
   Clock01Icon,
   CloudUploadIcon,
   DollarCircleIcon,
@@ -15,7 +14,8 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { Hero } from "@/components/marketing/hero";
-import { AnimatedStat } from "@/components/marketing/animated-stat";
+import { Stats } from "@/components/marketing/stats";
+import { Pricing } from "@/components/marketing/pricing";
 import { Faq } from "@/components/marketing/faq";
 import { Reveal } from "@/components/marketing/reveal";
 import { WaitlistForm } from "@/components/marketing/waitlist-form";
@@ -72,51 +72,33 @@ const STEPS: { icon: IconType; title: string; body: string }[] = [
 const FEATURES: { icon: IconType; title: string; body: string }[] = [
   {
     icon: Search01Icon,
-    title: "Automatic denial analysis",
-    body: "Denial codes and EOB text turned into a clear, actionable reason for every claim.",
+    title: "Instant denial analysis",
+    body: "Every denial code and EOB turned into a plain-English reason your biller understands in seconds.",
   },
   {
     icon: Mail01Icon,
     title: "AI-drafted appeal letters",
-    body: "Professional appeals drafted instantly, ready for your team to review and send.",
+    body: "Professional, payer-ready appeals drafted instantly. Review, edit, and submit in under 5 minutes.",
   },
   {
     icon: Clock01Icon,
-    title: "Deadline tracking",
-    body: "A Needs Action view surfaces claims by days-to-deadline so nothing slips through.",
+    title: "Deadline + response tracking",
+    body: "See drafts near their filing deadline and submitted appeals past the expected payer response window — nothing slips through.",
   },
   {
     icon: Analytics01Icon,
     title: "Denial analytics by payer",
-    body: "Spot which payers and denial categories cost you the most, and act on the patterns.",
+    body: "Spot which payers and categories cost you the most so you can fix root causes and prevent future denials.",
   },
   {
     icon: MoneyReceive01Icon,
     title: "Recovery tracking",
-    body: "See revenue at risk versus recovered, so you always know what your appeals are returning.",
+    body: "Know exactly how much denied revenue you've recovered this month and what's still at risk.",
   },
   {
     icon: Pdf01Icon,
-    title: "Works with your EOB PDFs",
-    body: "No new billing system — bring the documents you already get from payers today.",
-  },
-];
-
-const OUTCOMES: { icon: IconType; stat: string; label: string }[] = [
-  {
-    icon: ChartUpIcon,
-    stat: "Recover more",
-    label: "of the denied revenue you're already owed",
-  },
-  {
-    icon: Clock01Icon,
-    stat: "Minutes, not hours",
-    label: "to analyze a denial and draft its appeal",
-  },
-  {
-    icon: CheckmarkBadge01Icon,
-    stat: "Fewer missed deadlines",
-    label: "with appeal windows tracked automatically",
+    title: "No new billing system",
+    body: "Works with the EOB PDFs you already get from payers. Drag-and-drop or forward by email.",
   },
 ];
 
@@ -130,11 +112,11 @@ export default function LandingPage() {
         <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6 lg:py-28">
           <Reveal className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              Denials are draining your bottom line
+              Your biller is losing hours a week to denials
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Billing teams lose real revenue to denials that are too slow,
-              too manual, and too easy to miss.
+              Small practices lose $80K–$150K a year to denials that are too
+              slow, too manual, or too easy to miss.
             </p>
           </Reveal>
           <div className="grid gap-4 md:grid-cols-3">
@@ -201,10 +183,10 @@ export default function LandingPage() {
         <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6 lg:py-28">
           <Reveal className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              Everything you need to work denials
+              Cut appeal writing from 45 minutes to 5
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Built for billing teams, from first denial to recovered payment.
+              Built for small-practice billing teams drowning in denials.
             </p>
           </Reveal>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -228,26 +210,10 @@ export default function LandingPage() {
       </section>
 
       {/* Outcomes */}
-      <section className="border-b border-border/50 bg-background">
-        <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6 lg:py-28">
-          <Reveal className="mx-auto mb-12 max-w-2xl text-center">
-            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              Real results from denial automation
-            </h2>
-            <p className="mt-3 text-muted-foreground">
-              What ClaimGuard delivers for billing teams.
-            </p>
-          </Reveal>
-          <div className="grid gap-10 md:grid-cols-3">
-            <AnimatedStat value={63} suffix="%" label="Average denial recovery rate" />
-            <AnimatedStat value={3} suffix=" min" label="From EOB upload to appeal draft" />
-            <AnimatedStat value={0} label="Missed deadlines with automated tracking" />
-          </div>
-          <p className="mt-10 text-center text-xs text-muted-foreground">
-            Illustrative outcomes based on the ClaimGuard workflow.
-          </p>
-        </div>
-      </section>
+      <Stats />
+
+      {/* Pricing */}
+      <Pricing />
 
       <Faq />
 

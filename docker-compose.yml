@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: claimguard
       POSTGRES_DB: claimguard
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - claimguard_pgdata:/var/lib/postgresql/data
     healthcheck:
