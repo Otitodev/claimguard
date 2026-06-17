@@ -1,0 +1,112 @@
+#!/bin/bash
+# cloud-init: runs once, as root, on the instance's first boot. This is the
+# in-the-box half of the setup — the exact steps run by hand, made repeatable.
+# Terraform fills in the templated placeholders before this runs (see compute.tf).
+set -euxo pipefail
+
+# --- system packages ---
+dnf install -y unzip awscli || true
+
+# --- uv + Python 3.12 (as ec2-user; AL2023 ships only 3.9) ---
+sudo -u ec2-user bash <<'USERSETUP'
+set -e
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
+uv python install 3.12
+mkdir -p ~/claimguard
+USERSETUP
+
+# --- pull the backend code artifact from S3 (allowed by the instance IAM role) ---
+aws s3 cp "s3://${artifact_bucket}/${artifact_key}" /tmp/backend.zip --region ${region}
+sudo -u ec2-user unzip -o /tmp/backend.zip -d /home/ec2-user/claimguard
+
+# --- create venv + install dependencies ---
+sudo -u ec2-user bash <<'BUILD'
+set -e
+export PATH="$HOME/.local/bin:$PATH"
+cd ~/claimguard
+uv venv --python 3.12 .venv
+source .venv/bin/activate
+uv pip install -r requirements.txt
+BUILD
+
+# --- write .env (secrets injected by Terraform) ---
+cat > /home/ec2-user/claimguard/.env <<ENV
+DB_IAM_AUTH=false
+DATABASE_URL=${db_url}
+LLM_PROVIDER=anthropic
+LLM_MODEL=claude-opus-4-8
+LLM_FAST_MODEL=claude-haiku-4-5
+ANTHROPIC_API_KEY=${anthropic_api_key}
+AGENTMAIL_API_KEY=${agentmail_api_key}
+BETTER_AUTH_URL=${better_auth_url}
+CORS_ORIGINS=${cors_origins}
+ENV
+chown ec2-user:ec2-user /home/ec2-user/claimguard/.env
+chmod 600 /home/ec2-user/claimguard/.env
+
+# --- create schema + seed demo data ---
+sudo -u ec2-user bash <<'INIT'
+set -e
+cd ~/claimguard
+source .venv/bin/activate
+python -c "from app.db import init_db; init_db()"
+python seed.py || true
+INIT
+
+# --- systemd unit for the API (auto-restart) ---
+cat > /etc/systemd/system/claimguard.service <<'UNIT'
+[Unit]
+Description=ClaimGuard API
+After=network.target
+
+[Service]
+User=ec2-user
+WorkingDirectory=/home/ec2-user/claimguard
+ExecStart=/home/ec2-user/claimguard/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+# --- Caddy: HTTPS reverse proxy with automatic Let's Encrypt cert ---
+curl -sL -o /usr/bin/caddy "https://caddyserver.com/api/download?os=linux&arch=arm64"
+chmod 755 /usr/bin/caddy
+groupadd --system caddy || true
+useradd --system --gid caddy --home-dir /var/lib/caddy --create-home --shell /usr/sbin/nologin caddy || true
+mkdir -p /etc/caddy
+
+cat > /etc/caddy/Caddyfile <<CADDY
+${api_domain} {
+    reverse_proxy 127.0.0.1:8000
+}
+CADDY
+
+cat > /etc/systemd/system/caddy.service <<'UNIT'
+[Unit]
+Description=Caddy
+After=network.target
+
+[Service]
+User=caddy
+Group=caddy
+ExecStart=/usr/bin/caddy run --config /etc/caddy/Caddyfile
+ExecReload=/usr/bin/caddy reload --config /etc/caddy/Caddyfile --force
+Restart=on-failure
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
+LimitNOFILE=1048576
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+chown -R caddy:caddy /var/lib/caddy
+
+# --- start everything ---
+systemctl daemon-reload
+systemctl enable --now claimguard
+systemctl enable --now caddy
+# Caddy auto-retries the cert until your DNS A record points at the Elastic IP,
+# so HTTPS comes up a few minutes after DNS propagates.

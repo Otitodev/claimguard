@@ -1,0 +1,16 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored so your
+# secrets never get committed. Alternatively, export TF_VAR_<name> env vars.
+
+api_domain     = "apiclaimguard.otito.site"
+admin_cidr     = "203.0.113.10/32"        # your public IP + /32 (curl ifconfig.me)
+ssh_public_key = "ssh-ed25519 AAAA...you" # contents of your SSH public key (.pub)
+
+anthropic_api_key = "sk-ant-..."
+agentmail_api_key = "" # optional
+
+# After the frontend is on Vercel, set these to the Vercel URL so auth + CORS work:
+better_auth_url = "https://your-frontend.vercel.app"
+cors_origins    = "https://your-frontend.vercel.app,http://localhost:3000"
+
+# Keep Aurora warm during a live demo (no cold starts), ~$0.06/hr:
+# db_min_acu = 0.5

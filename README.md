@@ -1,5 +1,7 @@
 # ClaimGuard
 
+![ClaimGuard — automated denial management for independent practices](frontend/public/og-image.png)
+
 ClaimGuard automates insurance denial processing for small medical practices.
 Forward an EOB or denial PDF → AI extracts, classifies, and drafts a professional
 appeal letter → your biller reviews in minutes instead of hours. Built-in
@@ -63,7 +65,10 @@ pre-seeded dashboard with 16 demo claims covering every workflow state.
 
 | | Technology |
 |---|---|
-| **Backend** | FastAPI, LangGraph (parse → classify → draft → critique pipeline), SQLAlchemy, Postgres |
+| **Backend** | FastAPI, LangGraph (parse → classify → draft → critique pipeline), SQLAlchemy |
+| **Database** | **AWS Aurora PostgreSQL (Serverless v2)** in production; Docker Postgres for local dev |
+| **Hosting** | **AWS EC2** (Caddy + uvicorn, auto-HTTPS) for the API; **Vercel** for the frontend |
+| **Infra-as-code** | **Terraform** — the entire AWS stack is defined in [`infra/`](infra/) |
 | **Frontend** | Next.js 16 (App Router), React 19, Tailwind v4, shadcn/ui, hugeicons |
 | **Auth** | Better Auth (Neon Postgres), JWT-verified between frontend and backend |
 | **LLM** | Anthropic Claude via langchain-anthropic, provider-agnostic abstraction |
@@ -73,6 +78,38 @@ The pipeline graph is rebuilt per request, with nodes closing over a
 request-scoped SQLAlchemy session. Persistence is idempotent:
 match-or-create for patient/payer/claim, duplicate denials guarded on
 `(claim_id, denial_code, denial_date)`.
+
+## Deployment (AWS)
+
+Production runs entirely on AWS, with the API and database co-located in
+`eu-north-1` for low-latency:
+
+```
+Vercel (Next.js) ──HTTPS──▶ EC2 t4g.small ──private VPC──▶ Aurora Serverless v2
+                            (Caddy + uvicorn)              (scale-to-0)
+```
+
+- **Aurora PostgreSQL Serverless v2** — scales to zero when idle; standard
+  password auth with normal connection pooling.
+- **EC2 (Graviton/arm64)** — runs the FastAPI app under `systemd`; **Caddy**
+  reverse-proxies it with an automatic Let's Encrypt certificate. The database is
+  reachable only from the app's security group (no public DB exposure).
+- **Vercel** — hosts the Next.js frontend.
+
+The whole stack is **infrastructure-as-code** in [`infra/`](infra/) (Terraform +
+cloud-init). To stand up a fresh environment:
+
+```bash
+cd infra
+cp terraform.tfvars.example terraform.tfvars   # fill in domain, IP, API keys
+terraform init
+terraform plan        # review what will be created
+terraform apply       # build it
+```
+
+See [`infra/README.md`](infra/README.md) for a full walkthrough (written for
+first-time Terraform users). Local development still uses Docker Postgres per the
+Quick Start above — no AWS account required.
 
 ## Commands
 
