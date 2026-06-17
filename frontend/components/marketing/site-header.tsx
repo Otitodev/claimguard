@@ -60,9 +60,7 @@ export function SiteHeader() {
         <motion.div
           className="flex flex-row items-center justify-between gap-4 rounded-full border border-border p-2 backdrop-blur-xl"
           animate={{
-            backgroundColor: isScrolled
-              ? "color-mix(in oklch, var(--background) 80%, transparent)"
-              : "var(--background)",
+            backgroundColor: "var(--background)",
             boxShadow: isScrolled
               ? "0 4px 20px -5px rgba(0, 0, 0, 0.35)"
               : "0 0 0 0 rgba(0, 0, 0, 0)",
