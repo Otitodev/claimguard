@@ -146,6 +146,7 @@ Key ones:
 - **Tests require Docker Postgres.** The suite forces `DB_IAM_AUTH=false`.
 - **No Azure/OpenAI config out of the box.** Trust `.env.example`, not the old
   README references to `OPENAI_API_KEY`.
-- **`claimgaurd_TRD.md` typo is intentional** — don't rename it.
+- **`TRD §N` in code comments** refers to an internal design doc that isn't part
+  of this repo — the section numbers are just stable labels.
 - **Frontend `.env.local`** (not `.env`) is the Next.js convention.
 - **`npm run test` does not exist** — the README previously referenced it in error.

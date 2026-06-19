@@ -8,7 +8,9 @@ ClaimGuard is a B2B SaaS tool that automates insurance claim-denial processing f
 medical practices: ingest an EOB/denial PDF → extract & classify the denial → draft an
 appeal letter when warranted → surface analytics / claims / needs-action. `claimgaurd_TRD.md`
 is the source-of-truth design doc; its section numbers (TRD §N) are referenced throughout the
-code. The repo has two independent parts: `backend/` (FastAPI + LangGraph + Postgres) and
+code. (It's kept **local-only / untracked** — present in this working copy but not committed,
+so it won't appear in a fresh clone.) The repo has two independent parts: `backend/` (FastAPI
++ LangGraph + Postgres) and
 `frontend/` (Next.js 16 dashboard).
 
 ## Commands

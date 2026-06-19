@@ -2,7 +2,8 @@
 
 FastAPI + LangGraph backend that ingests EOB/denial PDFs, extracts and
 classifies the denial, drafts an appeal when warranted, and serves analytics /
-claims / needs-action endpoints. See `../claimgaurd_TRD.md` for the full design.
+claims / needs-action endpoints. (Code comments reference design-doc sections as
+`TRD §N`; the design doc itself is kept internal and not part of this repo.)
 
 All commands below are run from this `backend/` directory.
 

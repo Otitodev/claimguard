@@ -5,7 +5,8 @@
 ClaimGuard automates insurance claim-denial processing: ingest an EOB/denial PDF →
 extract & classify → draft an appeal letter. Two independent halves: `backend/`
 (FastAPI + LangGraph + Postgres) and `frontend/` (Next.js 16 + Tailwind v4).
-Design doc: `claimgaurd_TRD.md` (the "claimgaurd" typo is intentional; do not "fix" it).
+Design doc: `claimgaurd_TRD.md` — **local-only / untracked** (in this working copy, not
+committed, so absent from a fresh clone). The "claimgaurd" typo is intentional; do not "fix" it.
 
 ## Commands
 
