@@ -22,8 +22,21 @@ class Settings(BaseSettings):
     # deployed Vercel domain (e.g. "https://claimguard.vercel.app").
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
 
+    # --- Better Auth (frontend) session verification --------------------------
+    # The Next.js frontend issues ES256 JWTs via Better Auth's jwt plugin. The
+    # API verifies them against the JWKS endpoint and derives the practice from
+    # the authenticated user. `better_auth_url` is the frontend origin (also the
+    # JWT issuer); in production set it to the deployed Vercel domain.
+    better_auth_url: str = "http://localhost:3000"
+    # Defaults to "{better_auth_url}/api/auth/jwks" when unset.
+    better_auth_jwks_url: str | None = None
+
     llm_provider: str = "anthropic"
     llm_model: str = "claude-opus-4-8"
+    # Faster/cheaper model for the self-critique pass (a scoring/review task that
+    # doesn't need the flagship model). Keeps uploads responsive — extraction,
+    # classification, and drafting stay on llm_model.
+    llm_fast_model: str = "claude-haiku-4-5"
 
     # langchain-anthropic reads ANTHROPIC_API_KEY from the environment directly;
     # surfaced here so config.Settings is the single source of truth.

@@ -33,6 +33,9 @@ class Practice(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     name: Mapped[str] = mapped_column(Text, nullable=False)
+    # Better Auth user id (JWT `sub`) that owns this practice. One practice per
+    # user; the API derives the practice from the authenticated user via this.
+    owner_user_id: Mapped[str | None] = mapped_column(Text, unique=True)
     # AgentMail email-in mapping (TRD §5): the dedicated inbox for this practice.
     # The webhook derives practice_id from message.inbox_id via this column.
     agentmail_inbox_id: Mapped[str | None] = mapped_column(Text, unique=True)
@@ -105,6 +108,7 @@ class Claim(Base):
 
     patient: Mapped[Patient] = relationship()
     payer: Mapped[Payer] = relationship()
+    practice: Mapped[Practice] = relationship()
     denials: Mapped[list["Denial"]] = relationship(
         back_populates="claim", cascade="all, delete-orphan"
     )
@@ -172,6 +176,12 @@ class Appeal(Base):
     submitted_date: Mapped[date | None] = mapped_column(Date)
     outcome_date: Mapped[date | None] = mapped_column(Date)
     recovered_amount: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
+    # When the payer is expected to respond (submitted_date + response_window).
+    # Defaults to 45 days for commercial payers; configurable per-payer later.
+    expected_response_date: Mapped[date | None] = mapped_column(Date)
+    status_updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

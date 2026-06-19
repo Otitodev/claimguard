@@ -20,13 +20,18 @@ class PipelineState(TypedDict, total=False):
     appeal_window_days: int
     # match_or_create_claim
     claim_id: uuid.UUID
-    # classify_denial
+    # retrieve_policy
     primary_denial_code: Optional[str]
     denial_category: Optional[str]
+    payer_type: Optional[str]
+    policy_context: str
+    # classify_denial
     appeal_deadline: Optional[date]
     classification: DenialClassification
     # draft_appeal
     appeal_letter: Optional[str]
+    # critique_appeal
+    appeal_critique: dict
     # persist
     denial_id: uuid.UUID
     already_existed: bool

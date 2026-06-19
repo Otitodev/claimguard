@@ -17,7 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { api } from "@/lib/api";
+import { api } from "@/lib/api-server";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type { ClaimDetail } from "@/lib/types";
 

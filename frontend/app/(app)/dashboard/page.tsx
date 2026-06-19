@@ -3,6 +3,7 @@ import {
   Alert02Icon,
   ArrowUpRight01Icon,
   Invoice03Icon,
+  Mail01Icon,
 } from "@hugeicons/core-free-icons";
 
 import { DenialByPayerChart } from "@/components/charts/denial-by-payer";
@@ -16,7 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
-import { api, defaultPractice, safe } from "@/lib/api";
+import { api, defaultPractice, safe } from "@/lib/api-server";
 import { formatCurrency, formatPercent } from "@/lib/format";
 
 export default async function HomePage() {
@@ -68,6 +69,23 @@ export default async function HomePage() {
           value={formatCurrency(summary.revenue_recovered_this_month)}
           icon={ArrowUpRight01Icon}
           valueClassName="text-status-recovered"
+        />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <MetricCard
+          label="Appeals in Progress"
+          value={summary.appeals_in_progress}
+          icon={Mail01Icon}
+        />
+        <MetricCard
+          label="Avg Days to Resolution"
+          value={
+            summary.avg_days_to_resolution != null
+              ? `${summary.avg_days_to_resolution}d`
+              : "—"
+          }
+          icon={Activity02Icon}
         />
       </div>
 

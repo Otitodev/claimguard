@@ -1,5 +1,5 @@
 import { UploadForm } from "@/components/upload-form";
-import { defaultPractice } from "@/lib/api";
+import { defaultPractice } from "@/lib/api-server";
 
 export default async function UploadPage() {
   const practice = await defaultPractice();

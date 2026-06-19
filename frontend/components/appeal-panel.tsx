@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Download01Icon, FileDownloadIcon } from "@hugeicons/core-free-icons";
 
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -14,8 +16,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { updateAppeal } from "@/lib/api";
+import { RichEditor } from "@/components/rich-editor";
+import { downloadAppeal, updateAppeal } from "@/lib/api";
 import type { AppealOut, AppealStatus } from "@/lib/types";
 
 export function AppealPanel({
@@ -29,8 +31,20 @@ export function AppealPanel({
   const [text, setText] = useState(appeal.letter_text ?? "");
   const [saving, setSaving] = useState(false);
   const [busy, setBusy] = useState<AppealStatus | "save" | null>(null);
+  const [downloading, setDownloading] = useState<string | null>(null);
 
   const terminal = appeal.status === "won" || appeal.status === "lost";
+
+  async function handleDownload(format: "pdf" | "doc") {
+    setDownloading(format);
+    try {
+      await downloadAppeal(appeal.id, format);
+    } catch {
+      toast.error(`Could not download ${format.toUpperCase()}`);
+    } finally {
+      setDownloading(null);
+    }
+  }
 
   async function save() {
     setSaving(true);
@@ -76,22 +90,38 @@ export function AppealPanel({
         </div>
       </CardHeader>
       <CardContent>
-        <Textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
+        <RichEditor
+          content={text}
+          onUpdate={setText}
           disabled={terminal}
-          rows={16}
-          className="resize-y font-serif text-sm leading-relaxed"
         />
       </CardContent>
       <CardFooter className="flex-wrap justify-between gap-2">
-        <Button
-          variant="outline"
-          onClick={save}
-          disabled={terminal || saving || text === (appeal.letter_text ?? "")}
-        >
-          {saving ? "Saving…" : "Save letter"}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            onClick={save}
+            disabled={terminal || saving || text === (appeal.letter_text ?? "")}
+          >
+            {saving ? "Saving…" : "Save letter"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => handleDownload("pdf")}
+            disabled={downloading !== null}
+          >
+            <HugeiconsIcon icon={Download01Icon} data-icon="inline-start" />
+            {downloading === "pdf" ? "Downloading…" : "PDF"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => handleDownload("doc")}
+            disabled={downloading !== null}
+          >
+            <HugeiconsIcon icon={FileDownloadIcon} data-icon="inline-start" />
+            {downloading === "doc" ? "Downloading…" : "DOC"}
+          </Button>
+        </div>
         <div className="flex flex-wrap gap-2">
           {appeal.status === "drafted" ? (
             <Button onClick={() => setStatus("submitted")} disabled={busy !== null}>

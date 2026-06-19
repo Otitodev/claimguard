@@ -14,6 +14,11 @@ _MIGRATIONS = (
     "ALTER TABLE practices ADD COLUMN IF NOT EXISTS agentmail_address text",
     "CREATE UNIQUE INDEX IF NOT EXISTS uq_practice_inbox "
     "ON practices (agentmail_inbox_id)",
+    "ALTER TABLE practices ADD COLUMN IF NOT EXISTS owner_user_id text",
+    "CREATE UNIQUE INDEX IF NOT EXISTS uq_practice_owner "
+    "ON practices (owner_user_id)",
+    "ALTER TABLE appeals ADD COLUMN IF NOT EXISTS expected_response_date date",
+    "ALTER TABLE appeals ADD COLUMN IF NOT EXISTS status_updated_at timestamptz",
 )
 
 

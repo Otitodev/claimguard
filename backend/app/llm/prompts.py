@@ -44,8 +44,33 @@ Write a complete appeal letter that:
 - States the claim being appealed (date of service, billed amount, denial code)
 - Presents the medical necessity argument clearly, tied to the specific CPT/ICD
   codes
+- Leverages any policy guidance provided to ground the argument (cite the
+  payer's coverage criteria / appeal process where relevant)
 - Requests reconsideration and payment of the claim
 - Uses a professional closing
 
+Structure the letter with clear sections (Patient Information, Basis for Appeal,
+Supporting Evidence, Request for Reconsideration). Separate sections with blank
+lines for readability.
+
 Return ONLY the letter text, no JSON, no commentary.
+"""
+
+CRITIQUE_APPEAL = """\
+You are a senior medical-billing appeals reviewer auditing a drafted insurance
+appeal letter before it is sent to the payer.
+
+Evaluate the letter against the denial reason and the provided policy guidance:
+- Does it directly rebut the stated denial reason?
+- Does it cite the specific CPT/ICD codes and a concrete medical-necessity
+  argument (not generic boilerplate)?
+- Does it align with the policy guidance — the right appeal angle for this
+  denial category and payer?
+- Is the tone professional, with a clear request for reconsideration?
+
+Score the letter 1-5 (5 = ready to send). Set adequate=true only if it is
+genuinely ready (score >= 4). List concrete, specific issues. If adequate is
+false, write a fully rewritten, improved letter in revised_letter that fixes
+the issues and better leverages the policy guidance; otherwise set
+revised_letter to null.
 """

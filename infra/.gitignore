@@ -1,0 +1,11 @@
+# Terraform state can contain secrets (DB password) — never commit it.
+*.tfstate
+*.tfstate.*
+.terraform/
+crash.log
+
+# Your real secrets.
+terraform.tfvars
+
+# Build artifacts produced by archive_file.
+.artifacts/

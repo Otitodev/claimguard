@@ -11,8 +11,10 @@ from typing import Any
 from ..config import settings
 
 
-@lru_cache(maxsize=1)
-def get_chat_model() -> Any:
+@lru_cache(maxsize=None)
+def get_chat_model(model: str | None = None) -> Any:
+    """Build a chat model for ``model`` (defaults to ``LLM_MODEL``). Cached per
+    model id so the flagship and fast models are each constructed once."""
     from langchain.chat_models import init_chat_model
 
     # pydantic-settings loads .env into Settings but does NOT export to os.environ,
@@ -23,7 +25,7 @@ def get_chat_model() -> Any:
         kwargs["api_key"] = settings.anthropic_api_key
 
     return init_chat_model(
-        settings.llm_model, model_provider=settings.llm_provider, **kwargs
+        model or settings.llm_model, model_provider=settings.llm_provider, **kwargs
     )
 
 

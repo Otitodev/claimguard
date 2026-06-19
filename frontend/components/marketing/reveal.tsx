@@ -1,14 +1,12 @@
 "use client";
 
 import type { ReactNode } from "react";
-
-import { useInView } from "@/hooks/use-in-view";
-import { cn } from "@/lib/utils";
+import { motion, useReducedMotion } from "motion/react";
 
 /**
- * Fades + slides its children up as they enter the viewport (once).
- * Honors prefers-reduced-motion: reduced-motion users see the final state
- * with no transition.
+ * Fades + slides its children up as they enter the viewport (once), powered by
+ * Motion. Honors prefers-reduced-motion: reduced-motion users see the final
+ * state with no transition. `delay` is in milliseconds (kept for API parity).
  */
 export function Reveal({
   children,
@@ -19,22 +17,25 @@ export function Reveal({
   className?: string;
   delay?: number;
 }) {
-  const { ref, inView } = useInView();
+  const reduceMotion = useReducedMotion();
+
+  if (reduceMotion) {
+    return <div className={className}>{children}</div>;
+  }
 
   return (
-    <div
-      ref={ref}
-      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
-      className={cn(
-        "transition-all duration-700 ease-out will-change-[opacity,transform]",
-        // Visible by default; the hidden start state only applies when JS is
-        // active (.js on <html>), so no-JS visitors always see the content.
-        !inView && "js:translate-y-4 js:opacity-0",
-        "motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none",
-        className,
-      )}
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{
+        duration: 0.7,
+        ease: [0.25, 0.46, 0.45, 0.94],
+        delay: delay / 1000,
+      }}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }

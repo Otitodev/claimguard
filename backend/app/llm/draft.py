@@ -23,6 +23,7 @@ def draft_appeal(
     reason_summary: str,
     appeal_angle: Optional[str],
     payer_name: Optional[str],
+    policy_context: str = "",
 ) -> str:
     from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -37,6 +38,8 @@ def draft_appeal(
         f"Denial reason: {reason_summary}\n"
         f"Suggested medical-necessity argument: {appeal_angle or 'n/a'}"
     )
+    if policy_context:
+        user += f"\n\nPayer/CARC policy guidance to ground the argument:\n{policy_context}"
     response = llm.invoke(
         [SystemMessage(content=DRAFT_APPEAL), HumanMessage(content=user)]
     )

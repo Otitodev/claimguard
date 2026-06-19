@@ -30,6 +30,8 @@ pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# …but keep the documented template in version control.
+!.env.example
 
 # typescript
 *.tsbuildinfo

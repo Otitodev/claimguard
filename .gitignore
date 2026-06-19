@@ -6,3 +6,4 @@ venv/
 backend/samples/
 .pytest_cache/
 .DS_Store
+lp_template/

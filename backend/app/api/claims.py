@@ -1,10 +1,11 @@
 import uuid
 from typing import Optional
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from ..auth import get_current_practice
 from ..db import get_session
 from ..models import Claim, Practice
 from ..pipeline.graph import run_pipeline
@@ -16,27 +17,22 @@ router = APIRouter(tags=["claims"])
 
 @router.post("/claims/upload")
 def upload_claim(
-    practice_id: uuid.UUID = Form(...),
     file: UploadFile = File(...),
+    practice: Practice = Depends(get_current_practice),
     session: Session = Depends(get_session),
 ) -> dict:
     """Manual PDF upload — the primary demo path (TRD §8).
 
-    Runs the pipeline synchronously and returns the resulting claim detail plus
-    the pipeline result summary. (Async BackgroundTasks + a status column for
-    the live 'uploaded → parsing → classified' stepper is the frontend-era
-    follow-up.)
+    Runs the pipeline synchronously against the authenticated user's practice
+    and returns the resulting claim detail plus the pipeline result summary.
     """
-    if session.get(Practice, practice_id) is None:
-        raise HTTPException(404, "practice not found")
-
     pdf_bytes = file.file.read()
     if not pdf_bytes:
         raise HTTPException(400, "empty file")
 
     result = run_pipeline(
         session,
-        practice_id=practice_id,
+        practice_id=practice.id,
         pdf_bytes=pdf_bytes,
         source_document_url=file.filename,
     )
@@ -47,12 +43,12 @@ def upload_claim(
 
 @router.get("/claims", response_model=list[ClaimSummary])
 def list_claims(
-    practice_id: uuid.UUID,
     status: Optional[str] = None,
     payer: Optional[str] = None,
+    practice: Practice = Depends(get_current_practice),
     session: Session = Depends(get_session),
 ) -> list[ClaimSummary]:
-    stmt = select(Claim).where(Claim.practice_id == practice_id)
+    stmt = select(Claim).where(Claim.practice_id == practice.id)
     if status:
         stmt = stmt.where(Claim.status == status)
     stmt = stmt.order_by(Claim.created_at.desc())
@@ -65,9 +61,11 @@ def list_claims(
 
 @router.get("/claims/{claim_id}", response_model=ClaimDetail)
 def get_claim(
-    claim_id: uuid.UUID, session: Session = Depends(get_session)
+    claim_id: uuid.UUID,
+    practice: Practice = Depends(get_current_practice),
+    session: Session = Depends(get_session),
 ) -> ClaimDetail:
     claim = session.get(Claim, claim_id)
-    if claim is None:
+    if claim is None or claim.practice_id != practice.id:
         raise HTTPException(404, "claim not found")
     return claim_detail(claim)

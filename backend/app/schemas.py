@@ -43,6 +43,19 @@ class DenialClassification(BaseModel):
     appeal_angle: Optional[str] = None
 
 
+class AppealCritique(BaseModel):
+    """Self-review of a drafted appeal letter (critique_appeal).
+
+    The pipeline uses ``revised_letter`` to replace a weak draft before it is
+    persisted, so the agent improves its own output before a human sees it.
+    """
+
+    adequate: bool
+    score: int = Field(ge=1, le=5)
+    issues: list[str] = Field(default_factory=list)
+    revised_letter: Optional[str] = None
+
+
 # --- API response models -----------------------------------------------------
 
 
@@ -83,6 +96,8 @@ class AppealOut(BaseModel):
     submitted_date: Optional[date]
     outcome_date: Optional[date]
     recovered_amount: Optional[Decimal]
+    expected_response_date: Optional[date]
+    status_updated_at: Optional[datetime]
 
     model_config = {"from_attributes": True}
 
@@ -121,6 +136,12 @@ class NeedsActionItem(BaseModel):
     denied_amount: Optional[Decimal]
     appeal_deadline: Optional[date]
     days_remaining: Optional[int]
+    # "deadline" = drafted appeal nearing filing deadline
+    # "overdue" = submitted appeal past expected payer response date
+    kind: str = "deadline"
+    submitted_date: Optional[date] = None
+    expected_response_date: Optional[date] = None
+    days_since_submission: Optional[int] = None
 
 
 class PayerRate(BaseModel):
@@ -143,6 +164,8 @@ class AnalyticsSummary(BaseModel):
     revenue_recovered_this_month: Decimal
     denial_rate_by_payer: list[PayerRate]
     revenue_at_risk_by_category: list[CategoryRisk]
+    appeals_in_progress: int = 0
+    avg_days_to_resolution: Optional[float] = None
 
 
 class AppealUpdate(BaseModel):

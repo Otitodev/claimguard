@@ -31,7 +31,7 @@ def inbox_practice():
 @pytest.fixture
 def client(fake_llm, monkeypatch):
     # No real LLM / no real AgentMail: fake the model and the attachment fetch.
-    monkeypatch.setattr(graph_module, "get_chat_model", lambda: fake_llm)
+    monkeypatch.setattr(graph_module, "get_chat_model", lambda model=None: fake_llm)
     monkeypatch.setattr(
         agentmail_client, "download_attachment", lambda *a, **k: SAMPLE_PDF
     )
