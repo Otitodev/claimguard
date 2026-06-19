@@ -25,7 +25,8 @@ npm run dev        # http://localhost:3000
 
 `.env.local` sets `NEXT_PUBLIC_API_URL=http://localhost:8000`. Server Components
 fetch from it during SSR; client mutations (upload, appeal edits) call it from
-the browser.
+the browser. In production (Vercel) point it at the live AWS API:
+`NEXT_PUBLIC_API_URL=https://apiclaimguard.otito.site`.
 
 ```bash
 npm run typecheck  # tsc --noEmit

@@ -1,8 +1,10 @@
 # ClaimGuard — H0 Hackathon Submission
 
 **Track:** Monetizable B2B App (Healthcare / Insurance)
-**AWS Database:** Amazon Aurora PostgreSQL (Serverless v2, free-tier express configuration)
+**AWS Database:** Amazon Aurora PostgreSQL (Serverless v2)
+**Backend:** FastAPI on AWS EC2 (Caddy + uvicorn, auto-HTTPS) — live at `https://apiclaimguard.otito.site`
 **Frontend:** Next.js 16 deployed on Vercel
+**Infra-as-code:** Terraform (`infra/`)
 **Tag:** #H0Hackathon
 
 ---
@@ -32,20 +34,25 @@ the claim → denial → appeal lifecycle with foreign keys and uniqueness
 constraints used for idempotency (a re-uploaded EOB never double-writes a denial,
 guarded on `(claim_id, denial_code, denial_date)`).
 
-The cluster runs on the AWS **free-tier "express configuration"**, which has no
-VPC or master password. The backend reaches it over Aurora's managed
-**internet-access gateway** using short-lived **RDS IAM authentication tokens**
-over TLS — a fresh token is minted per connection (boto3 SigV4, no network
-round-trip), used as the database password, with `sslmode=require`. Because the
-gateway endpoint lives in an `.aws.dev` DNS zone that some resolvers can't reach,
-the engine resolves it via public DNS and connects by IP while preserving the
-hostname for TLS SNI (the gateway routes on SNI). Connection handling uses a
-`NullPool` (one freshly-tokened connection per request) because the gateway reaps
-idle connections without a clean TCP reset, which would hang a conventional pool.
+Production runs Aurora as **Serverless v2** (scale-to-zero when idle) inside the
+default VPC, reachable **only** from the API server's security group — no public
+database exposure. The backend connects with standard password auth over TLS
+(`sslmode=require`); the master password is generated once by Terraform and
+injected into both the cluster and the app's `.env`, so it's never copied by
+hand. The API itself runs on an **EC2** instance (Graviton/arm64) under
+`systemd`, with **Caddy** reverse-proxying it and issuing an automatic Let's
+Encrypt certificate — live at `https://apiclaimguard.otito.site`. The whole
+stack is **infrastructure-as-code** in [`infra/`](infra/) (Terraform +
+cloud-init).
 
-This is all isolated behind a single `DB_IAM_AUTH` flag, so the identical
-application code runs against local Docker Postgres in development and Aurora in
-production with no code change — only environment variables differ.
+The same application code also supports a **zero-cost free-tier alternative**:
+Aurora's "express configuration" (no VPC, no master password) reached over its
+managed internet-access gateway using short-lived **RDS IAM authentication
+tokens** (a fresh boto3-signed token per connection, `NullPool` because the
+gateway reaps idle connections). That path is selected with `DB_IAM_AUTH=true`;
+the production deploy above leaves it `false` and uses `DATABASE_URL`. Either
+way the identical code runs against local Docker Postgres in development — only
+environment variables differ.
 
 ---
 
@@ -62,14 +69,13 @@ flowchart TD
         DASH["Authed dashboard<br/>(analytics · claims · needs-action · upload)"]
     end
 
-    subgraph Backend["FastAPI backend (Railway)"]
+    subgraph EC2["AWS EC2 — eu-north-1 (Caddy + uvicorn · systemd)"]
         API["REST API<br/>/claims · /appeals · /denials<br/>/analytics · /leads · /webhooks"]
         PIPE["LangGraph pipeline<br/>parse → resolve → match → classify → draft → persist"]
     end
 
-    subgraph AWS["AWS"]
-        GW["Aurora internet-access gateway<br/>(IAM-token auth · TLS SNI)"]
-        AUR[("Amazon Aurora PostgreSQL<br/>practices · patients · payers<br/>claims · denials · appeals<br/>activity_log · leads")]
+    subgraph AWSDB["AWS — eu-north-1 (private VPC)"]
+        AUR[("Amazon Aurora PostgreSQL<br/>Serverless v2 · password auth · TLS<br/>practices · patients · payers<br/>claims · denials · appeals<br/>activity_log · leads")]
     end
 
     LLM["Anthropic Claude<br/>(provider-abstracted:<br/>extract · classify · draft)"]
@@ -82,9 +88,8 @@ flowchart TD
     MAIL -. "POST /webhooks/agentmail" .-> API
     API --> PIPE
     PIPE -->|"structured output"| LLM
-    PIPE -->|"IAM token per connection"| GW
-    API -->|"read queries"| GW
-    GW --> AUR
+    PIPE -->|"writes (TLS · private VPC)"| AUR
+    API -->|"read queries"| AUR
 ```
 
 ### Request flow (PDF upload → appeal)
@@ -110,9 +115,10 @@ AgentMail webhook, so email-in ingestion reuses the exact pipeline.
 | Layer | Technology |
 |-------|-----------|
 | Frontend | Next.js 16 (App Router, React Server Components), Tailwind v4, shadcn/ui, deployed on **Vercel** |
-| Backend | FastAPI, LangGraph, SQLAlchemy 2.0 (sync), Pydantic v2 |
+| Backend | FastAPI, LangGraph, SQLAlchemy 2.0 (sync), Pydantic v2 — on **AWS EC2** (Caddy + uvicorn, auto-HTTPS) |
 | AI | Anthropic Claude via a provider abstraction (`init_chat_model`) — swappable to Bedrock with no code change |
-| Database | **Amazon Aurora PostgreSQL** (free-tier express config, RDS IAM auth) |
+| Database | **Amazon Aurora PostgreSQL** (Serverless v2, password auth, private VPC; free-tier IAM-auth path also supported) |
+| Infra | **Terraform** — the whole AWS stack as code in `infra/` |
 | Email-in | AgentMail webhook (wired to the same pipeline) |
 
 ---
@@ -121,6 +127,7 @@ AgentMail webhook, so email-in ingestion reuses the exact pipeline.
 
 - [x] AWS database named and explained — **Amazon Aurora PostgreSQL** (above)
 - [x] Architecture diagram (above)
+- [x] Live API on AWS — `https://apiclaimguard.otito.site` (`/health` → ok)
 - [ ] Vercel project link + Team ID
 - [ ] Proof of Aurora usage (AWS Console screenshot of the cluster)
 - [ ] Demo video (< 3 min, YouTube)

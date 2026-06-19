@@ -60,15 +60,23 @@ patient/payer/claim and guards duplicate denials on `(claim_id, denial_code, den
 so re-uploading the same EOB does not create duplicates. Appeal deadline = denial_date +
 `payers.appeal_window_days`. All lifecycle steps write `activity_log` rows.
 
-**Dual database modes behind `DB_IAM_AUTH` (`app/db.py`).** `false` (default) → local Docker
-Postgres via `DATABASE_URL`. `true` → AWS free-tier Aurora "express configuration", which has
-no VPC/password and uses **IAM token auth** over a public internet-access gateway: the engine
-mints a fresh RDS IAM token per connection (boto3), resolves the gateway endpoint via public
-DNS (dnspython, since its `.aws.dev` zone defeats some local resolvers) and connects by IP
-with the hostname kept for TLS SNI, and uses **NullPool** (the gateway reaps idle connections
-without a clean reset, which hangs normal pooling). Full runbook: `backend/README.md` §9.
-`schema.sql` is the canonical DDL; `app/models.py` mirrors it; `init_db()` runs `create_all`
-plus idempotent additive `_MIGRATIONS`.
+**Dual database modes behind `DB_IAM_AUTH` (`app/db.py`).** `false` (default) → plain
+`DATABASE_URL` with normal pooling. This is both **local Docker Postgres** in dev and the
+**production Aurora Serverless v2** (password auth, private VPC, `sslmode=require`) — the live
+deploy on EC2 uses this path (`infra/bootstrap.sh.tftpl` writes `DB_IAM_AUTH=false` +
+`DATABASE_URL`). `true` → the **free-tier alternative**: Aurora "express configuration", which
+has no VPC/password and uses **IAM token auth** over a public internet-access gateway: the
+engine mints a fresh RDS IAM token per connection (boto3), resolves the gateway endpoint via
+public DNS (dnspython, since its `.aws.dev` zone defeats some local resolvers) and connects by
+IP with the hostname kept for TLS SNI, and uses **NullPool** (the gateway reaps idle
+connections without a clean reset, which hangs normal pooling). Full IAM runbook:
+`backend/README.md` §9. `schema.sql` is the canonical DDL; `app/models.py` mirrors it;
+`init_db()` runs `create_all` plus idempotent additive `_MIGRATIONS`.
+
+**Deployment.** Production is **infrastructure-as-code in `infra/`** (Terraform + cloud-init):
+EC2 (Caddy auto-HTTPS + uvicorn under systemd) → Aurora Serverless v2 in a private VPC. Live at
+`https://apiclaimguard.otito.site`. Railway (`backend/DEPLOY_RAILWAY.md`) is a documented
+alternative host that pairs with the `DB_IAM_AUTH=true` free-tier Aurora path.
 
 **API layer.** Routers in `app/api/` (claims, appeals, denials, analytics, webhooks) registered
 in `main.py`, which also has CORS for the :3000 frontend and meta routes `/health` + `/practices`.

@@ -81,8 +81,9 @@ match-or-create for patient/payer/claim, duplicate denials guarded on
 
 ## Deployment (AWS)
 
-Production runs entirely on AWS, with the API and database co-located in
-`eu-north-1` for low-latency:
+The production API is **live** at **`https://apiclaimguard.otito.site`**
+(`/health` → `{"status":"ok"}`). It runs entirely on AWS, with the API and
+database co-located in `eu-north-1` for low latency:
 
 ```
 Vercel (Next.js) ──HTTPS──▶ EC2 t4g.small ──private VPC──▶ Aurora Serverless v2
