@@ -5,6 +5,8 @@
 CREATE TABLE IF NOT EXISTS practices (
     id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     name                text NOT NULL,
+    -- Subscription plan key (see app/plans.py); drives the in-app plan/ROI panel.
+    plan                text NOT NULL DEFAULT 'claimguard',
     -- Better Auth user id (JWT `sub`) that owns this practice; the API derives
     -- the practice from the authenticated user. One practice per user.
     owner_user_id       text UNIQUE,

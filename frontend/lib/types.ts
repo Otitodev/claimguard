@@ -109,6 +109,10 @@ export interface AnalyticsSummary {
   revenue_at_risk_by_category: CategoryRisk[];
   appeals_in_progress: number;
   avg_days_to_resolution: number | null;
+  plan: string;
+  plan_label: string;
+  plan_price_monthly: string;
+  roi_multiple: number | null;
 }
 
 export interface UploadResult {

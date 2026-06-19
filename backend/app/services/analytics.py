@@ -1,18 +1,19 @@
 """Analytics aggregation (TRD §8)."""
 
-import uuid
 from datetime import date
 from decimal import Decimal
 
 from sqlalchemy import and_, exists, func, select
 
-from ..models import Appeal, Claim, Denial, DenialCode, Payer
+from ..models import Appeal, Claim, Denial, DenialCode, Payer, Practice
+from ..plans import DEFAULT_PLAN, get_plan
 from ..schemas import AnalyticsSummary, CategoryRisk, PayerRate
 
 DENIED_STATUSES = ("denied", "appealed", "written_off")
 
 
-def summary(session, practice_id: uuid.UUID) -> AnalyticsSummary:
+def summary(session, practice: Practice) -> AnalyticsSummary:
+    practice_id = practice.id
     total_claims = (
         session.scalar(
             select(func.count(Claim.id)).where(Claim.practice_id == practice_id)
@@ -137,6 +138,16 @@ def summary(session, practice_id: uuid.UUID) -> AnalyticsSummary:
     )
     avg_days = round(float(row), 1) if row is not None else None
 
+    # plan + ROI: how many times over the subscription paid for itself this month
+    plan_key = getattr(practice, "plan", None) or DEFAULT_PLAN
+    plan = get_plan(plan_key)
+    plan_price = plan["price_monthly"]
+    roi_multiple = (
+        round(float(revenue_recovered) / float(plan_price), 1)
+        if revenue_recovered and plan_price
+        else None
+    )
+
     return AnalyticsSummary(
         total_claims=total_claims,
         denial_rate=denial_rate,
@@ -147,4 +158,8 @@ def summary(session, practice_id: uuid.UUID) -> AnalyticsSummary:
         revenue_at_risk_by_category=revenue_at_risk_by_category,
         appeals_in_progress=appeals_in_progress,
         avg_days_to_resolution=avg_days,
+        plan=plan_key,
+        plan_label=str(plan["label"]),
+        plan_price_monthly=Decimal(str(plan_price)),
+        roi_multiple=roi_multiple,
     )

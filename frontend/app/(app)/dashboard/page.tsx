@@ -1,7 +1,9 @@
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Activity02Icon,
   Alert02Icon,
   ArrowUpRight01Icon,
+  DollarCircleIcon,
   Invoice03Icon,
   Mail01Icon,
 } from "@hugeicons/core-free-icons";
@@ -46,6 +48,64 @@ export default async function HomePage() {
           Denial overview for {practice.name}
         </p>
       </div>
+
+      {/* Plan & ROI — what the subscription returns vs. what it costs */}
+      <Card className="relative overflow-hidden border-primary/20">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-10 -top-10 size-44 rounded-full bg-primary/10 blur-3xl"
+        />
+        <CardHeader>
+          <CardDescription className="flex items-center gap-2">
+            <HugeiconsIcon icon={DollarCircleIcon} className="size-4 text-primary" />
+            Your plan
+          </CardDescription>
+          <CardTitle className="text-xl">
+            {summary.plan_label} · {formatCurrency(summary.plan_price_monthly)}/mo
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div>
+              <p className="text-xs text-muted-foreground">
+                Recovered this month
+              </p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums text-status-recovered">
+                {formatCurrency(summary.revenue_recovered_this_month)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Subscription cost</p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums">
+                {formatCurrency(summary.plan_price_monthly)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">
+                Return on ClaimGuard
+              </p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums text-primary">
+                {summary.roi_multiple != null
+                  ? `${summary.roi_multiple}×`
+                  : "—"}
+              </p>
+            </div>
+          </div>
+          <p className="mt-4 text-sm text-muted-foreground">
+            {summary.roi_multiple != null ? (
+              <>
+                ClaimGuard recovered{" "}
+                <span className="font-medium text-foreground">
+                  {summary.roi_multiple}×
+                </span>{" "}
+                its monthly cost for {practice.name} this month.
+              </>
+            ) : (
+              <>Recover your first appeal this month to see your return.</>
+            )}
+          </p>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard

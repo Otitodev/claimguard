@@ -19,6 +19,8 @@ _MIGRATIONS = (
     "ON practices (owner_user_id)",
     "ALTER TABLE appeals ADD COLUMN IF NOT EXISTS expected_response_date date",
     "ALTER TABLE appeals ADD COLUMN IF NOT EXISTS status_updated_at timestamptz",
+    "ALTER TABLE practices ADD COLUMN IF NOT EXISTS plan text NOT NULL "
+    "DEFAULT 'claimguard'",
 )
 
 

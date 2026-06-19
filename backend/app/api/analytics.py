@@ -15,4 +15,4 @@ def analytics_summary(
     practice: Practice = Depends(get_current_practice),
     session: Session = Depends(get_session),
 ) -> AnalyticsSummary:
-    return summary(session, practice.id)
+    return summary(session, practice)

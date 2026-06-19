@@ -135,7 +135,7 @@ def seed(session) -> Practice:
             session.add(DenialCode(code=code, description=desc, category=category))
     session.flush()
 
-    practice = Practice(name="Riverside Family Medicine")
+    practice = Practice(name="Riverside Family Medicine", plan="claimguard")
     session.add(practice)
     session.flush()
 

@@ -33,6 +33,8 @@ class Practice(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     name: Mapped[str] = mapped_column(Text, nullable=False)
+    # Subscription plan key (see app/plans.py). Drives the in-app plan/ROI panel.
+    plan: Mapped[str] = mapped_column(Text, nullable=False, server_default="claimguard")
     # Better Auth user id (JWT `sub`) that owns this practice. One practice per
     # user; the API derives the practice from the authenticated user via this.
     owner_user_id: Mapped[str | None] = mapped_column(Text, unique=True)

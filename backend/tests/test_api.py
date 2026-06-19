@@ -19,7 +19,8 @@ def auth_practice():
         p = Practice(name="API Test Practice")
         s.add(p)
         s.commit()
-        holder = SimpleNamespace(id=p.id, name=p.name)
+        s.refresh(p)  # load server-default columns (e.g. plan)
+        holder = SimpleNamespace(id=p.id, name=p.name, plan=p.plan)
     finally:
         s.close()
     return holder

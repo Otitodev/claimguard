@@ -166,6 +166,12 @@ class AnalyticsSummary(BaseModel):
     revenue_at_risk_by_category: list[CategoryRisk]
     appeals_in_progress: int = 0
     avg_days_to_resolution: Optional[float] = None
+    # Monetization / ROI panel
+    plan: str
+    plan_label: str
+    plan_price_monthly: Decimal
+    # recovered_this_month / plan_price_monthly; None when nothing recovered yet
+    roi_multiple: Optional[float] = None
 
 
 class AppealUpdate(BaseModel):
