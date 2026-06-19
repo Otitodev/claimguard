@@ -7,3 +7,11 @@ backend/samples/
 .pytest_cache/
 .DS_Store
 lp_template/
+
+# Internal docs / planning — kept local, not tracked
+STORY.md
+SUBMISSION.md
+appeal-tracking.md
+claimgaurd_TRD.md
+IMPROVEMENTS.md
+PRACTICE_PROFILE_PLAN.md

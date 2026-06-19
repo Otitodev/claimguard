@@ -1,4 +1,10 @@
-# Deploying the ClaimGuard backend to Railway
+# Deploying the ClaimGuard backend to Railway (alternative host)
+
+> The **primary, live** deployment is AWS EC2 + Caddy via Terraform
+> ([`../infra/`](../infra/)), at `https://apiclaimguard.otito.site`, talking to
+> Aurora Serverless v2 with password auth in a private VPC. See the root
+> `README.md`. **Railway below is an alternative host** that pairs with the
+> free-tier `DB_IAM_AUTH=true` Aurora path (`README.md` §9).
 
 The backend is stateless — it talks to Aurora over the free-tier internet-access
 gateway from anywhere (IAM-token auth), so it ports to Railway with no DB hosted

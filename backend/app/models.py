@@ -161,6 +161,12 @@ class Denial(Base):
     )
 
 
+# Days after submission a payer is expected to respond. Used to compute
+# Appeal.expected_response_date and as the fallback for appeals submitted before
+# that column existed (see api/denials.py needs-action queue).
+APPEAL_RESPONSE_WINDOW_DAYS = 45
+
+
 class Appeal(Base):
     __tablename__ = "appeals"
 

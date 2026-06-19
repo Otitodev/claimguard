@@ -2,7 +2,8 @@
 
 FastAPI + LangGraph backend that ingests EOB/denial PDFs, extracts and
 classifies the denial, drafts an appeal when warranted, and serves analytics /
-claims / needs-action endpoints. See `../claimgaurd_TRD.md` for the full design.
+claims / needs-action endpoints. (Code comments reference design-doc sections as
+`TRD §N`; the design doc itself is kept internal and not part of this repo.)
 
 All commands below are run from this `backend/` directory.
 
@@ -107,12 +108,18 @@ account and a public tunnel so their servers can reach this backend.
 Without a secret set, the handler skips signature verification (dev only). The
 webhook path is unit-tested with mocks (`tests/test_webhooks.py`).
 
-## 9. Aurora deploy (AWS free tier)
+## 9. Aurora deploy (AWS free-tier IAM path — alternative)
 
-The same backend runs against Amazon Aurora PostgreSQL. On the **AWS free-tier
-plan**, Aurora must be created with *express configuration*, which behaves very
-differently from a standard cluster — `app/db.py` handles those differences
-behind the `DB_IAM_AUTH` flag (local Docker is unaffected when it's `false`).
+> The **primary** production deployment is the Terraform stack in [`../infra/`](../infra/):
+> EC2 (Caddy + uvicorn) → **Aurora Serverless v2 with standard password auth** in a private
+> VPC, live at `https://apiclaimguard.otito.site`. That path leaves `DB_IAM_AUTH=false` and
+> just points `DATABASE_URL` at the cluster (`sslmode=require`) — see the root `README.md`
+> "Deployment (AWS)". This section documents the **free-tier alternative** below.
+
+The same backend also runs against Amazon Aurora on the **AWS free-tier plan**, where Aurora
+must be created with *express configuration*, which behaves very differently from a standard
+cluster — `app/db.py` handles those differences behind the `DB_IAM_AUTH` flag (local Docker is
+unaffected when it's `false`).
 
 **Provision** (one CLI call; free tier requires `--with-express-configuration`):
 

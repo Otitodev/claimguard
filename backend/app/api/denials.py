@@ -1,12 +1,20 @@
 from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..auth import get_current_practice
 from ..db import get_session
-from ..models import Appeal, Claim, Denial, Patient, Payer, Practice
+from ..models import (
+    APPEAL_RESPONSE_WINDOW_DAYS,
+    Appeal,
+    Claim,
+    Denial,
+    Patient,
+    Payer,
+    Practice,
+)
 from ..schemas import NeedsActionItem
 
 router = APIRouter(tags=["denials"])
@@ -64,6 +72,14 @@ def needs_action(
         )
 
     # --- Submitted appeals past expected response date ---
+    # Appeals submitted before expected_response_date existed have it NULL, so
+    # fall back to submitted_date + the standard response window; otherwise those
+    # legacy appeals would never surface in this queue.
+    effective_response_date = func.coalesce(
+        Appeal.expected_response_date,
+        Appeal.submitted_date
+        + timedelta(days=APPEAL_RESPONSE_WINDOW_DAYS),
+    )
     submitted_stmt = (
         select(Appeal, Denial, Claim, Patient, Payer)
         .join(Denial, Appeal.denial_id == Denial.id)
@@ -73,15 +89,21 @@ def needs_action(
         .where(
             Claim.practice_id == practice.id,
             Appeal.status == "submitted",
-            Appeal.expected_response_date.is_not(None),
-            Appeal.expected_response_date <= today,
+            effective_response_date.is_not(None),
+            effective_response_date <= today,
         )
-        .order_by(Appeal.expected_response_date.asc())
+        .order_by(effective_response_date.asc())
     )
 
     for appeal, denial, claim, patient, payer in session.execute(submitted_stmt).all():
         days_since = (
             (today - appeal.submitted_date).days
+            if appeal.submitted_date
+            else None
+        )
+        expected_response_date = appeal.expected_response_date or (
+            appeal.submitted_date
+            + timedelta(days=APPEAL_RESPONSE_WINDOW_DAYS)
             if appeal.submitted_date
             else None
         )
@@ -98,7 +120,7 @@ def needs_action(
                 days_remaining=None,
                 kind="overdue",
                 submitted_date=appeal.submitted_date,
-                expected_response_date=appeal.expected_response_date,
+                expected_response_date=expected_response_date,
                 days_since_submission=days_since,
             )
         )

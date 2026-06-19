@@ -5,7 +5,8 @@
 ClaimGuard automates insurance claim-denial processing: ingest an EOB/denial PDF →
 extract & classify → draft an appeal letter. Two independent halves: `backend/`
 (FastAPI + LangGraph + Postgres) and `frontend/` (Next.js 16 + Tailwind v4).
-Design doc: `claimgaurd_TRD.md` (the "claimgaurd" typo is intentional; do not "fix" it).
+Design doc: `claimgaurd_TRD.md` — **local-only / untracked** (in this working copy, not
+committed, so absent from a fresh clone). The "claimgaurd" typo is intentional; do not "fix" it.
 
 ## Commands
 
@@ -69,8 +70,12 @@ npm run format        # prettier
 - **No Azure/OpenAI config.** The provider abstraction supports only Anthropic out of the box.
   The README mentions `OPENAI_API_KEY` but the codebase and `.env.example` use `ANTHROPIC_API_KEY`
   (via langchain-anthropic). Trust the `.env.example`.
-- **Dual database mode:** `DB_IAM_AUTH=true` enables Aurora IAM token auth with NullPool
-  (the gateway eats idle connections). Full runbook: `backend/README.md` §9.
+- **Dual database mode:** `DB_IAM_AUTH=false` (default) uses a plain `DATABASE_URL` with normal
+  pooling — both local Docker Postgres and the **production** Aurora Serverless v2 (password
+  auth, private VPC). The live deploy is EC2 + Caddy via Terraform (`infra/`), at
+  `https://apiclaimguard.otito.site`. `DB_IAM_AUTH=true` is the free-tier alternative: Aurora
+  IAM token auth with NullPool (the gateway eats idle connections); full runbook
+  `backend/README.md` §9, Railway host in `backend/DEPLOY_RAILWAY.md`.
 - **The "claimgaurd" typo** in the TRD filename is intentional — don't rename it.
 - **CORS origins:** no trailing slashes. Comma-separated in `CORS_ORIGINS` env var.
 - **Frontend `.env.local`** (not `.env`) — Next.js convention. Backend uses `.env`.

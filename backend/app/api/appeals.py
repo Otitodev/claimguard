@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from ..auth import get_current_practice
 from ..db import get_session
-from ..models import Appeal, Practice
+from ..models import APPEAL_RESPONSE_WINDOW_DAYS, Appeal, Practice
 from ..schemas import AppealOut, AppealUpdate
 from ..services.export import generate_doc, generate_pdf
 from ..services.persistence import log_activity
@@ -46,7 +46,9 @@ def update_appeal(
         today = date.today()
         if payload.status == "submitted":
             appeal.submitted_date = today
-            appeal.expected_response_date = today + timedelta(days=45)
+            appeal.expected_response_date = today + timedelta(
+                days=APPEAL_RESPONSE_WINDOW_DAYS
+            )
         elif payload.status in ("won", "lost"):
             appeal.outcome_date = today
 

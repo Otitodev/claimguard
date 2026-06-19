@@ -81,8 +81,9 @@ match-or-create for patient/payer/claim, duplicate denials guarded on
 
 ## Deployment (AWS)
 
-Production runs entirely on AWS, with the API and database co-located in
-`eu-north-1` for low-latency:
+The production API is **live** at **`https://apiclaimguard.otito.site`**
+(`/health` → `{"status":"ok"}`). It runs entirely on AWS, with the API and
+database co-located in `eu-north-1` for low latency:
 
 ```
 Vercel (Next.js) ──HTTPS──▶ EC2 t4g.small ──private VPC──▶ Aurora Serverless v2
@@ -145,6 +146,7 @@ Key ones:
 - **Tests require Docker Postgres.** The suite forces `DB_IAM_AUTH=false`.
 - **No Azure/OpenAI config out of the box.** Trust `.env.example`, not the old
   README references to `OPENAI_API_KEY`.
-- **`claimgaurd_TRD.md` typo is intentional** — don't rename it.
+- **`TRD §N` in code comments** refers to an internal design doc that isn't part
+  of this repo — the section numbers are just stable labels.
 - **Frontend `.env.local`** (not `.env`) is the Next.js convention.
 - **`npm run test` does not exist** — the README previously referenced it in error.

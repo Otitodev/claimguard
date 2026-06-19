@@ -4,9 +4,11 @@ This folder is the **entire AWS backend stack as code** — the same thing that 
 built by hand (Aurora + EC2 + Caddy/HTTPS), written so it can be recreated with a
 couple of commands and torn down just as easily.
 
-> Status: **source-of-truth artifact.** It documents the live stack and can stand
-> up a fresh, parallel one. It has **not** been `apply`-ed or `import`-ed against
-> the hand-built resources, so running it creates a *separate* stack.
+> Status: **source-of-truth artifact.** The live API it describes is up at
+> **`https://apiclaimguard.otito.site`** (`/health` → ok). That stack was built by
+> hand; this Terraform documents it and can stand up a fresh, parallel one. It has
+> **not** been `apply`-ed or `import`-ed against the hand-built resources, so
+> running it creates a *separate* stack.
 
 ---
 
