@@ -13,8 +13,10 @@ class Settings(BaseSettings):
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
 
+    # Local Docker Postgres publishes on host port 5433 (docker-compose.yml) to
+    # avoid clashing with a system Postgres already on 5432.
     database_url: str = (
-        "postgresql+psycopg://claimguard:claimguard@localhost:5432/claimguard"
+        "postgresql+psycopg://claimguard:claimguard@localhost:5433/claimguard"
     )
 
     # Comma-separated CORS origins allowed to call the API from a browser.

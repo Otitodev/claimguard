@@ -3,6 +3,7 @@
 import io
 from datetime import date
 from html import unescape
+from xml.sax.saxutils import escape
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_LEFT
@@ -88,32 +89,40 @@ def generate_pdf(appeal: Appeal) -> bytes:
 
     elements: list = []
 
+    # ReportLab parses Paragraph input as XML-like markup, so any dynamic value
+    # containing &, <, or > (e.g. "Blue Cross & Blue Shield") must be escaped to
+    # avoid a parse error; only the literal <b>...</b> tags below stay unescaped.
+
     # Sender
     elements.append(
-        Paragraph(f"<b>{meta['practice_name']}</b>", letter_header)
+        Paragraph(f"<b>{escape(meta['practice_name'])}</b>", letter_header)
     )
-    elements.append(Paragraph(meta["practice_address"], letter_body))
-    elements.append(Paragraph(meta["practice_city_state_zip"], letter_body))
-    elements.append(Paragraph(f"Phone: {meta['practice_phone']}", letter_body))
+    elements.append(Paragraph(escape(meta["practice_address"]), letter_body))
+    elements.append(Paragraph(escape(meta["practice_city_state_zip"]), letter_body))
+    elements.append(
+        Paragraph(f"Phone: {escape(meta['practice_phone'])}", letter_body)
+    )
     elements.append(Spacer(1, 18))
 
     # Date
-    elements.append(Paragraph(meta["date"], letter_body))
+    elements.append(Paragraph(escape(meta["date"]), letter_body))
     elements.append(Spacer(1, 12))
 
     # Recipient
-    elements.append(Paragraph(f"<b>{meta['payer_name']}</b>", letter_header))
-    elements.append(Paragraph(meta["payer_address"], letter_body))
+    elements.append(
+        Paragraph(f"<b>{escape(meta['payer_name'])}</b>", letter_header)
+    )
+    elements.append(Paragraph(escape(meta["payer_address"]), letter_body))
     if meta["payer_city_state_zip"]:
-        elements.append(Paragraph(meta["payer_city_state_zip"], letter_body))
+        elements.append(Paragraph(escape(meta["payer_city_state_zip"]), letter_body))
     elements.append(Spacer(1, 18))
 
     # Subject
     elements.append(
         Paragraph(
-            f"<b>RE: Appeal of Denied Claim — Patient: {meta['patient_name']}"
-            f" | Date of Service: {meta['claim_dos']}"
-            f" | Denial Code: {meta['denial_code']}</b>",
+            f"<b>RE: Appeal of Denied Claim — Patient: {escape(meta['patient_name'])}"
+            f" | Date of Service: {escape(meta['claim_dos'])}"
+            f" | Denial Code: {escape(meta['denial_code'])}</b>",
             letter_body,
         )
     )
@@ -129,7 +138,7 @@ def generate_pdf(appeal: Appeal) -> bytes:
     for para in clean.split("\n"):
         stripped = para.strip()
         if stripped:
-            elements.append(Paragraph(stripped, letter_body))
+            elements.append(Paragraph(escape(stripped), letter_body))
     elements.append(Spacer(1, 14))
 
     # Closing
