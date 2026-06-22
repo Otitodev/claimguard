@@ -1,6 +1,7 @@
 """Export appeal letters as PDF or DOC."""
 
 import io
+import re
 from datetime import date
 from html import unescape
 from xml.sax.saxutils import escape
@@ -20,10 +21,20 @@ from ..models import Appeal
 
 
 def _strip_html(text: str) -> str:
-    import re
+    """Flatten the editor's HTML to newline-delimited plain text.
 
+    The rich editor stores block elements with no literal newlines
+    (``<p>A</p><p>B</p>``), so before dropping tags we turn block-closing
+    tags and ``<br>`` into newlines — otherwise every paragraph would collapse
+    into a single run-on line when split on "\\n" downstream.
+    """
+    # Block boundaries -> newline (paragraphs, list items, breaks, headings).
+    text = re.sub(r"(?i)<br\s*/?>", "\n", text)
+    text = re.sub(r"(?i)</(p|div|li|h[1-6]|blockquote|tr)>", "\n", text)
     text = re.sub(r"<[^>]+>", "", text)
     text = unescape(text)
+    # Collapse the runs of blank lines block tags can leave behind.
+    text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
 
 
