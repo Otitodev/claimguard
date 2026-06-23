@@ -7,6 +7,20 @@ CREATE TABLE IF NOT EXISTS practices (
     name                text NOT NULL,
     -- Subscription plan key (see app/plans.py); drives the in-app plan/ROI panel.
     plan                text NOT NULL DEFAULT 'claimguard',
+    -- Practice profile (letterhead identity + draft tone); set via onboarding/Settings.
+    phone                         text,
+    fax                           text,
+    address_line1                 text,
+    address_line2                 text,
+    city                          text,
+    state                         text,
+    zip_code                      text,
+    npi                           text,
+    tax_id                        text,
+    primary_provider_name         text,
+    primary_provider_credentials  text,
+    specialty                     text,
+    default_appeal_tone           text NOT NULL DEFAULT 'formal',
     -- Better Auth user id (JWT `sub`) that owns this practice; the API derives
     -- the practice from the authenticated user. One practice per user.
     owner_user_id       text UNIQUE,

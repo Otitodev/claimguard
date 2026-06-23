@@ -21,6 +21,22 @@ _MIGRATIONS = (
     "ALTER TABLE appeals ADD COLUMN IF NOT EXISTS status_updated_at timestamptz",
     "ALTER TABLE practices ADD COLUMN IF NOT EXISTS plan text NOT NULL "
     "DEFAULT 'claimguard'",
+    # Practice profile (letterhead identity + draft tone)
+    "ALTER TABLE practices ADD COLUMN IF NOT EXISTS phone text",
+    "ALTER TABLE practices ADD COLUMN IF NOT EXISTS fax text",
+    "ALTER TABLE practices ADD COLUMN IF NOT EXISTS address_line1 text",
+    "ALTER TABLE practices ADD COLUMN IF NOT EXISTS address_line2 text",
+    "ALTER TABLE practices ADD COLUMN IF NOT EXISTS city text",
+    "ALTER TABLE practices ADD COLUMN IF NOT EXISTS state text",
+    "ALTER TABLE practices ADD COLUMN IF NOT EXISTS zip_code text",
+    "ALTER TABLE practices ADD COLUMN IF NOT EXISTS npi text",
+    "ALTER TABLE practices ADD COLUMN IF NOT EXISTS tax_id text",
+    "ALTER TABLE practices ADD COLUMN IF NOT EXISTS primary_provider_name text",
+    "ALTER TABLE practices ADD COLUMN IF NOT EXISTS "
+    "primary_provider_credentials text",
+    "ALTER TABLE practices ADD COLUMN IF NOT EXISTS specialty text",
+    "ALTER TABLE practices ADD COLUMN IF NOT EXISTS default_appeal_tone text "
+    "NOT NULL DEFAULT 'formal'",
 )
 
 

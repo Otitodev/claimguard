@@ -24,6 +24,8 @@ def draft_appeal(
     appeal_angle: Optional[str],
     payer_name: Optional[str],
     policy_context: str = "",
+    appeal_tone: Optional[str] = None,
+    specialty: Optional[str] = None,
 ) -> str:
     from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -38,6 +40,15 @@ def draft_appeal(
         f"Denial reason: {reason_summary}\n"
         f"Suggested medical-necessity argument: {appeal_angle or 'n/a'}"
     )
+    if specialty:
+        user += f"\nPractice specialty: {specialty}"
+    if appeal_tone:
+        _tone = {
+            "formal": "professional and formal",
+            "assertive": "assertive and firm, pressing the payer's obligations",
+            "concise": "concise and to the point",
+        }.get(appeal_tone, appeal_tone)
+        user += f"\nWrite the letter in a {_tone} tone."
     if policy_context:
         user += f"\n\nPayer/CARC policy guidance to ground the argument:\n{policy_context}"
     response = llm.invoke(

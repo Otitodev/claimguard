@@ -135,7 +135,22 @@ def seed(session) -> Practice:
             session.add(DenialCode(code=code, description=desc, category=category))
     session.flush()
 
-    practice = Practice(name="Riverside Family Medicine", plan="claimguard")
+    practice = Practice(
+        name="Riverside Family Medicine",
+        plan="claimguard",
+        phone="(217) 555-0142",
+        fax="(217) 555-0143",
+        address_line1="456 Oak Street, Suite 200",
+        city="Springfield",
+        state="IL",
+        zip_code="62701",
+        npi="1234567890",
+        tax_id="12-3456789",
+        primary_provider_name="Dr. Sarah Chen",
+        primary_provider_credentials="MD",
+        specialty="Family Medicine",
+        default_appeal_tone="formal",
+    )
     session.add(practice)
     session.flush()
 

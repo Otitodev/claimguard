@@ -20,7 +20,11 @@ def auth_practice():
         s.add(p)
         s.commit()
         s.refresh(p)  # load server-default columns (e.g. plan)
-        holder = SimpleNamespace(id=p.id, name=p.name, plan=p.plan)
+        # Snapshot every column so the detached holder satisfies the
+        # /me/practice serializer (which reads all profile fields).
+        holder = SimpleNamespace(
+            **{c.name: getattr(p, c.name) for c in Practice.__table__.columns}
+        )
     finally:
         s.close()
     return holder

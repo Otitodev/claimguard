@@ -14,9 +14,44 @@ export type ClaimStatus =
 
 export type AppealStatus = "drafted" | "submitted" | "won" | "lost" | "pending";
 
+export type AppealTone = "formal" | "assertive" | "concise";
+
 export interface Practice {
   id: string;
   name: string;
+  plan?: string;
+  phone?: string | null;
+  fax?: string | null;
+  address_line1?: string | null;
+  address_line2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip_code?: string | null;
+  npi?: string | null;
+  tax_id?: string | null;
+  primary_provider_name?: string | null;
+  primary_provider_credentials?: string | null;
+  specialty?: string | null;
+  default_appeal_tone?: AppealTone;
+  profile_complete?: boolean;
+}
+
+// Fields the onboarding/Settings forms can submit (PATCH /me/practice).
+export interface PracticeUpdate {
+  name?: string;
+  phone?: string;
+  fax?: string;
+  address_line1?: string;
+  address_line2?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  npi?: string;
+  tax_id?: string;
+  primary_provider_name?: string;
+  primary_provider_credentials?: string;
+  specialty?: string;
+  default_appeal_tone?: AppealTone;
 }
 
 export interface ClaimSummary {

@@ -37,11 +37,34 @@ def _build_letter_header(appeal: Appeal) -> dict:
 
     today = date.today()
 
+    # City, ST ZIP from whatever profile fields are filled.
+    city_state = ", ".join(p for p in (practice.city, practice.state) if p)
+    if practice.zip_code:
+        city_state = f"{city_state} {practice.zip_code}".strip()
+
+    # Signature: "Sarah Chen, MD" if available, else fall back to the practice.
+    provider = practice.primary_provider_name or practice.name
+    if practice.primary_provider_name and practice.primary_provider_credentials:
+        provider = (
+            f"{practice.primary_provider_name}, "
+            f"{practice.primary_provider_credentials}"
+        )
+
+    ids = []
+    if practice.npi:
+        ids.append(f"NPI: {practice.npi}")
+    if practice.tax_id:
+        ids.append(f"Tax ID: {practice.tax_id}")
+
     return {
         "practice_name": practice.name,
-        "practice_address": "123 Medical Drive, Suite 100",
-        "practice_city_state_zip": "Anytown, ST 12345",
-        "practice_phone": "(555) 555-0100",
+        "practice_address": practice.address_line1 or "",
+        "practice_address2": practice.address_line2 or "",
+        "practice_city_state_zip": city_state,
+        "practice_phone": practice.phone or "",
+        "practice_fax": practice.fax or "",
+        "practice_ids": " | ".join(ids),
+        "provider_signature": provider,
         "date": today.strftime("%B %d, %Y"),
         "payer_name": payer.name,
         "payer_address": "Claims Department",
@@ -93,15 +116,30 @@ def generate_pdf(appeal: Appeal) -> bytes:
     # containing &, <, or > (e.g. "Blue Cross & Blue Shield") must be escaped to
     # avoid a parse error; only the literal <b>...</b> tags below stay unescaped.
 
-    # Sender
+    # Sender (omit any letterhead lines the practice hasn't filled in)
     elements.append(
         Paragraph(f"<b>{escape(meta['practice_name'])}</b>", letter_header)
     )
-    elements.append(Paragraph(escape(meta["practice_address"]), letter_body))
-    elements.append(Paragraph(escape(meta["practice_city_state_zip"]), letter_body))
-    elements.append(
-        Paragraph(f"Phone: {escape(meta['practice_phone'])}", letter_body)
+    if meta["practice_address"]:
+        elements.append(Paragraph(escape(meta["practice_address"]), letter_body))
+    if meta["practice_address2"]:
+        elements.append(Paragraph(escape(meta["practice_address2"]), letter_body))
+    if meta["practice_city_state_zip"]:
+        elements.append(
+            Paragraph(escape(meta["practice_city_state_zip"]), letter_body)
+        )
+    contact = " · ".join(
+        p
+        for p in (
+            f"Phone: {meta['practice_phone']}" if meta["practice_phone"] else "",
+            f"Fax: {meta['practice_fax']}" if meta["practice_fax"] else "",
+        )
+        if p
     )
+    if contact:
+        elements.append(Paragraph(escape(contact), letter_body))
+    if meta["practice_ids"]:
+        elements.append(Paragraph(escape(meta["practice_ids"]), letter_body))
     elements.append(Spacer(1, 18))
 
     # Date
@@ -144,10 +182,9 @@ def generate_pdf(appeal: Appeal) -> bytes:
     # Closing
     elements.append(Paragraph("Sincerely,", letter_body))
     elements.append(Spacer(1, 28))
-    elements.append(
-        Paragraph(f"{meta['practice_name']}", letter_body)
-    )
-    elements.append(Paragraph("Billing Department", letter_body))
+    elements.append(Paragraph(escape(meta["provider_signature"]), letter_body))
+    if meta["provider_signature"] != meta["practice_name"]:
+        elements.append(Paragraph(escape(meta["practice_name"]), letter_body))
 
     doc.build(elements)
     buf.seek(0)
@@ -187,11 +224,27 @@ def generate_doc(appeal: Appeal) -> bytes:
         run.bold = bold
         return p
 
-    # Header
+    # Header (omit letterhead lines the practice hasn't filled in)
     add_para(meta["practice_name"], bold=True, size=12, space_after=2)
-    add_para(meta["practice_address"], size=11, space_after=2)
-    add_para(meta["practice_city_state_zip"], size=11, space_after=2)
-    add_para(f"Phone: {meta['practice_phone']}", size=11, space_after=18)
+    if meta["practice_address"]:
+        add_para(meta["practice_address"], size=11, space_after=2)
+    if meta["practice_address2"]:
+        add_para(meta["practice_address2"], size=11, space_after=2)
+    if meta["practice_city_state_zip"]:
+        add_para(meta["practice_city_state_zip"], size=11, space_after=2)
+    contact = " · ".join(
+        p
+        for p in (
+            f"Phone: {meta['practice_phone']}" if meta["practice_phone"] else "",
+            f"Fax: {meta['practice_fax']}" if meta["practice_fax"] else "",
+        )
+        if p
+    )
+    if contact:
+        add_para(contact, size=11, space_after=2)
+    if meta["practice_ids"]:
+        add_para(meta["practice_ids"], size=11, space_after=2)
+    add_para("", size=4, space_after=12)  # spacer before date
 
     add_para(meta["date"], size=11, space_after=12)
 
@@ -221,8 +274,9 @@ def generate_doc(appeal: Appeal) -> bytes:
 
     add_para("", size=11, space_after=14)
     add_para("Sincerely,", size=11, space_after=28)
-    add_para(meta["practice_name"], size=11, space_after=2)
-    add_para("Billing Department", size=11, space_after=2)
+    add_para(meta["provider_signature"], size=11, space_after=2)
+    if meta["provider_signature"] != meta["practice_name"]:
+        add_para(meta["practice_name"], size=11, space_after=2)
 
     buf = io.BytesIO()
     doc.save(buf)
