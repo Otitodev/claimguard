@@ -147,6 +147,7 @@ def make_draft(session, llm):
         ex = state["extracted"]
         cls = state["classification"]
         claim = session.get(Claim, state["claim_id"])
+        practice = claim.practice if claim else None
         letter = draft_appeal(
             llm,
             patient_name=ex.patient_name,
@@ -159,6 +160,8 @@ def make_draft(session, llm):
             appeal_angle=cls.appeal_angle,
             payer_name=state.get("payer_name"),
             policy_context=state.get("policy_context", ""),
+            appeal_tone=getattr(practice, "default_appeal_tone", None),
+            specialty=getattr(practice, "specialty", None),
         )
         return {"appeal_letter": letter}
 

@@ -166,12 +166,76 @@ class AnalyticsSummary(BaseModel):
     revenue_at_risk_by_category: list[CategoryRisk]
     appeals_in_progress: int = 0
     avg_days_to_resolution: Optional[float] = None
+    # Monetization / ROI panel
+    plan: str
+    plan_label: str
+    plan_price_monthly: Decimal
+    # recovered_this_month / plan_price_monthly; None when nothing recovered yet
+    roi_multiple: Optional[float] = None
 
 
 class AppealUpdate(BaseModel):
     letter_text: Optional[str] = None
     status: Optional[Literal["drafted", "submitted", "won", "lost", "pending"]] = None
     recovered_amount: Optional[Decimal] = None
+
+
+# --- Practice profile (onboarding + Settings) --------------------------------
+
+AppealTone = Literal["formal", "assertive", "concise"]
+
+
+class PracticeUpdate(BaseModel):
+    """Partial update of the practice profile (PATCH /me/practice). Every field
+    is optional so the onboarding wizard can save one step at a time."""
+
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    fax: Optional[str] = None
+    address_line1: Optional[str] = None
+    address_line2: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
+    npi: Optional[str] = None
+    tax_id: Optional[str] = None
+    primary_provider_name: Optional[str] = None
+    primary_provider_credentials: Optional[str] = None
+    specialty: Optional[str] = None
+    default_appeal_tone: Optional[AppealTone] = None
+
+
+class PracticeOut(BaseModel):
+    id: str
+    name: str
+    plan: str
+    phone: Optional[str] = None
+    fax: Optional[str] = None
+    address_line1: Optional[str] = None
+    address_line2: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
+    npi: Optional[str] = None
+    tax_id: Optional[str] = None
+    primary_provider_name: Optional[str] = None
+    primary_provider_credentials: Optional[str] = None
+    specialty: Optional[str] = None
+    default_appeal_tone: str = "formal"
+    # True once the fields required for a sendable appeal letter are filled.
+    profile_complete: bool = False
+
+
+# Fields that must be set before the practice can send a real appeal letter.
+PROFILE_REQUIRED_FIELDS = (
+    "address_line1",
+    "city",
+    "state",
+    "zip_code",
+    "phone",
+    "npi",
+    "primary_provider_name",
+)
 
 
 # --- Lead capture (marketing landing page) -----------------------------------

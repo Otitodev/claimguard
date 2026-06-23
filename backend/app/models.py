@@ -33,6 +33,26 @@ class Practice(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     name: Mapped[str] = mapped_column(Text, nullable=False)
+    # Subscription plan key (see app/plans.py). Drives the in-app plan/ROI panel.
+    plan: Mapped[str] = mapped_column(Text, nullable=False, server_default="claimguard")
+    # --- Practice profile (identity used on the appeal letterhead + draft tone).
+    # Populated by the onboarding wizard / Settings; see PRACTICE_PROFILE_PLAN.
+    phone: Mapped[str | None] = mapped_column(Text)
+    fax: Mapped[str | None] = mapped_column(Text)
+    address_line1: Mapped[str | None] = mapped_column(Text)
+    address_line2: Mapped[str | None] = mapped_column(Text)
+    city: Mapped[str | None] = mapped_column(Text)
+    state: Mapped[str | None] = mapped_column(Text)  # 2-letter code
+    zip_code: Mapped[str | None] = mapped_column(Text)
+    npi: Mapped[str | None] = mapped_column(Text)  # National Provider Identifier
+    tax_id: Mapped[str | None] = mapped_column(Text)
+    primary_provider_name: Mapped[str | None] = mapped_column(Text)
+    primary_provider_credentials: Mapped[str | None] = mapped_column(Text)  # MD/DO/NP
+    specialty: Mapped[str | None] = mapped_column(Text)
+    # formal | assertive | concise — influences the drafted appeal's tone
+    default_appeal_tone: Mapped[str] = mapped_column(
+        Text, nullable=False, server_default="formal"
+    )
     # Better Auth user id (JWT `sub`) that owns this practice. One practice per
     # user; the API derives the practice from the authenticated user via this.
     owner_user_id: Mapped[str | None] = mapped_column(Text, unique=True)

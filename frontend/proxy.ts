@@ -23,5 +23,7 @@ export const config = {
     "/claims/:path*",
     "/needs-action/:path*",
     "/upload/:path*",
+    "/settings/:path*",
+    "/onboarding/:path*",
   ],
 };

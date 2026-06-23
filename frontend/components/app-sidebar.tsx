@@ -9,6 +9,7 @@ import {
   CloudUploadIcon,
   Home09Icon,
   Invoice03Icon,
+  Settings02Icon,
 } from "@hugeicons/core-free-icons";
 
 import {
@@ -37,6 +38,7 @@ const items: NavItem[] = [
   { title: "Needs Action", href: "/needs-action", icon: Alert02Icon, badge: true },
   { title: "Claims", href: "/claims", icon: Invoice03Icon },
   { title: "Upload", href: "/upload", icon: CloudUploadIcon },
+  { title: "Settings", href: "/settings", icon: Settings02Icon },
 ];
 
 export function AppSidebar({ needsActionCount }: { needsActionCount: number }) {

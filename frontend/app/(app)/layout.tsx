@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { redirect } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Alert02Icon } from "@hugeicons/core-free-icons";
 
@@ -20,6 +21,12 @@ export default async function AppLayout({
   children: ReactNode;
 }) {
   const practice = await defaultPractice();
+  // New practices land in onboarding until the letterhead/provider fields the
+  // appeal letters need are filled in. (The /onboarding routes live outside this
+  // group, so the redirect can't loop.)
+  if (practice && !practice.profile_complete) {
+    redirect("/onboarding");
+  }
   const needs = practice ? await safe(api.needsAction(practice.id), []) : [];
 
   return (
