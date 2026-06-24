@@ -65,6 +65,7 @@ def run_pipeline(
     llm=None,
     critique_llm=None,
     source_document_url: Optional[str] = None,
+    source: str = "upload",
 ) -> dict:
     """Run parse → resolve → retrieve_policy → classify → (draft → critique) →
     persist, then commit.
@@ -83,6 +84,7 @@ def run_pipeline(
         "practice_id": practice_id,
         "pdf_bytes": pdf_bytes,
         "source_document_url": source_document_url,
+        "source": source,
     }
     final = graph.invoke(initial)
     session.commit()

@@ -5,6 +5,7 @@ import {
   CloudUploadIcon,
   DocumentValidationIcon,
   FileEditIcon,
+  Mail01Icon,
   Sent02Icon,
 } from "@hugeicons/core-free-icons";
 
@@ -16,6 +17,7 @@ type IconType = Parameters<typeof HugeiconsIcon>[0]["icon"];
 
 const META: Record<string, { icon: IconType; label: string }> = {
   uploaded: { icon: CloudUploadIcon, label: "Document uploaded" },
+  received_email: { icon: Mail01Icon, label: "Received via email" },
   parsed: { icon: DocumentValidationIcon, label: "EOB parsed" },
   classified: { icon: Activity02Icon, label: "Denial classified" },
   appeal_drafted: { icon: FileEditIcon, label: "Appeal drafted" },
@@ -67,10 +69,12 @@ export function ActivityTimeline({ activity }: { activity: ActivityOut[] }) {
                     "rounded border px-1 py-px text-[10px] font-medium uppercase tracking-wide",
                     a.actor === "ai"
                       ? "border-status-appealed/30 bg-status-appealed/10 text-status-appealed"
-                      : "border-border bg-muted text-muted-foreground",
+                      : a.actor === "agentmail"
+                        ? "border-primary/30 bg-primary/10 text-primary"
+                        : "border-border bg-muted text-muted-foreground",
                   )}
                 >
-                  {a.actor}
+                  {a.actor === "agentmail" ? "email" : a.actor}
                 </span>
               </div>
               <span className="text-xs text-muted-foreground">

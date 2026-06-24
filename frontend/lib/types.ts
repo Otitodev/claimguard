@@ -33,6 +33,8 @@ export interface Practice {
   primary_provider_credentials?: string | null;
   specialty?: string | null;
   default_appeal_tone?: AppealTone;
+  agentmail_address?: string | null;
+  email_intake_enabled?: boolean;
   profile_complete?: boolean;
 }
 
@@ -87,7 +89,7 @@ export interface AppealOut {
 export interface ActivityOut {
   id: string;
   action_type: string;
-  actor: "ai" | "user";
+  actor: "ai" | "user" | "agentmail";
   details: Record<string, unknown> | null;
   created_at: string;
 }

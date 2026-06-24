@@ -10,6 +10,8 @@ class PipelineState(TypedDict, total=False):
     practice_id: uuid.UUID
     pdf_bytes: bytes
     source_document_url: Optional[str]
+    # how the document arrived: "upload" (manual) or "email" (AgentMail webhook)
+    source: str
     # parse_eob
     raw_text: str
     extracted: ExtractedEOB

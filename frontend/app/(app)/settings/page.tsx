@@ -1,3 +1,4 @@
+import { EmailIntakeCard } from "@/components/email-intake-card";
 import { PracticeForm } from "@/components/practice-form";
 import { defaultPractice } from "@/lib/api-server";
 
@@ -14,6 +15,7 @@ export default async function SettingsPage() {
         </p>
       </div>
       <PracticeForm initial={practice} mode="settings" />
+      <EmailIntakeCard address={practice.agentmail_address} />
     </div>
   );
 }

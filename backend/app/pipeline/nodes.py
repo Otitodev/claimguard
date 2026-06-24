@@ -209,10 +209,21 @@ def make_persist(session, llm):
         denial_date = ex.denial_date
         letter = state.get("appeal_letter")
 
+        source = state.get("source", "upload")
+        # An emailed-in document is an automated ("agentmail") actor; a manual
+        # upload is the user. This is the one place the source is recorded, so
+        # the activity timeline can show "Received via email".
+        intake_action = "received_email" if source == "email" else "uploaded"
+        intake_actor = "agentmail" if source == "email" else "user"
+
         existing = find_existing_denial(session, claim_id, code, denial_date)
         if existing is not None:
             log_activity(
-                session, claim_id, "uploaded", actor="user", details={"idempotent": True}
+                session,
+                claim_id,
+                intake_action,
+                actor=intake_actor,
+                details={"idempotent": True},
             )
             return {
                 "denial_id": existing.id,
@@ -249,7 +260,7 @@ def make_persist(session, llm):
         else:  # resubmit (or appeal with no letter)
             claim.status = "denied"
 
-        log_activity(session, claim_id, "uploaded", actor="user")
+        log_activity(session, claim_id, intake_action, actor=intake_actor)
         log_activity(
             session,
             claim_id,

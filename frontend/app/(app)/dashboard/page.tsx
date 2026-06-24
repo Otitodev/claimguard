@@ -10,6 +10,7 @@ import {
 
 import { DenialByPayerChart } from "@/components/charts/denial-by-payer";
 import { RevenueByCategoryChart } from "@/components/charts/revenue-by-category";
+import { EmailIntakeCard } from "@/components/email-intake-card";
 import { MetricCard } from "@/components/metric-card";
 import {
   Card,
@@ -106,6 +107,10 @@ export default async function HomePage() {
           </p>
         </CardContent>
       </Card>
+
+      {practice.email_intake_enabled ? (
+        <EmailIntakeCard address={practice.agentmail_address} />
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard

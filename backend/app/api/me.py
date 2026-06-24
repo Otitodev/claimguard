@@ -31,6 +31,8 @@ def _serialize(practice: Practice) -> PracticeOut:
         primary_provider_credentials=practice.primary_provider_credentials,
         specialty=practice.specialty,
         default_appeal_tone=practice.default_appeal_tone,
+        agentmail_address=practice.agentmail_address,
+        email_intake_enabled=bool(practice.agentmail_inbox_id),
         profile_complete=_profile_complete(practice),
     )
 

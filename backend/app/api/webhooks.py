@@ -78,6 +78,7 @@ def _process(
                 practice_id=practice_id,
                 pdf_bytes=pdf_bytes,
                 source_document_url=att.get("filename") or attachment_id,
+                source="email",
             )
     finally:
         session.close()

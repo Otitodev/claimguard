@@ -222,6 +222,10 @@ class PracticeOut(BaseModel):
     primary_provider_credentials: Optional[str] = None
     specialty: Optional[str] = None
     default_appeal_tone: str = "formal"
+    # AgentMail email-in: the dedicated inbox denials can be forwarded to.
+    agentmail_address: Optional[str] = None
+    # True once an AgentMail inbox has been provisioned for this practice.
+    email_intake_enabled: bool = False
     # True once the fields required for a sendable appeal letter are filled.
     profile_complete: bool = False
 
