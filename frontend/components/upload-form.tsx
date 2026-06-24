@@ -12,6 +12,7 @@ import {
 
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Card,
   CardContent,
@@ -115,7 +116,7 @@ export function UploadForm({ practiceId }: { practiceId: string }) {
           {STEPS.map((step, i) => (
             <div key={step} className="flex items-center gap-3">
               {i === STEPS.length - 1 ? (
-                <span className="size-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                <Spinner className="text-primary" />
               ) : (
                 <HugeiconsIcon
                   icon={CheckmarkCircle02Icon}

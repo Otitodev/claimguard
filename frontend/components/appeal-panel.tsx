@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { RichEditor } from "@/components/rich-editor";
+import { Spinner } from "@/components/ui/spinner";
 import { downloadAppeal, updateAppeal } from "@/lib/api";
 import type { AppealOut, AppealStatus } from "@/lib/types";
 
@@ -103,6 +104,7 @@ export function AppealPanel({
             onClick={save}
             disabled={terminal || saving || text === (appeal.letter_text ?? "")}
           >
+            {saving ? <Spinner data-icon="inline-start" /> : null}
             {saving ? "Saving…" : "Save letter"}
           </Button>
           <Button
@@ -110,7 +112,11 @@ export function AppealPanel({
             onClick={() => handleDownload("pdf")}
             disabled={downloading !== null}
           >
-            <HugeiconsIcon icon={Download01Icon} data-icon="inline-start" />
+            {downloading === "pdf" ? (
+              <Spinner data-icon="inline-start" />
+            ) : (
+              <HugeiconsIcon icon={Download01Icon} data-icon="inline-start" />
+            )}
             {downloading === "pdf" ? "Downloading…" : "PDF"}
           </Button>
           <Button
@@ -118,13 +124,18 @@ export function AppealPanel({
             onClick={() => handleDownload("doc")}
             disabled={downloading !== null}
           >
-            <HugeiconsIcon icon={FileDownloadIcon} data-icon="inline-start" />
+            {downloading === "doc" ? (
+              <Spinner data-icon="inline-start" />
+            ) : (
+              <HugeiconsIcon icon={FileDownloadIcon} data-icon="inline-start" />
+            )}
             {downloading === "doc" ? "Downloading…" : "DOC"}
           </Button>
         </div>
         <div className="flex flex-wrap gap-2">
           {appeal.status === "drafted" ? (
             <Button onClick={() => setStatus("submitted")} disabled={busy !== null}>
+              {busy === "submitted" ? <Spinner data-icon="inline-start" /> : null}
               {busy === "submitted" ? "Submitting…" : "Mark submitted"}
             </Button>
           ) : null}
@@ -135,10 +146,12 @@ export function AppealPanel({
                 onClick={() => setStatus("lost")}
                 disabled={busy !== null}
               >
-                {busy === "lost" ? "…" : "Mark lost"}
+                {busy === "lost" ? <Spinner data-icon="inline-start" /> : null}
+                {busy === "lost" ? "Marking…" : "Mark lost"}
               </Button>
               <Button onClick={() => setStatus("won")} disabled={busy !== null}>
-                {busy === "won" ? "…" : "Mark won"}
+                {busy === "won" ? <Spinner data-icon="inline-start" /> : null}
+                {busy === "won" ? "Marking…" : "Mark won"}
               </Button>
             </>
           ) : null}
