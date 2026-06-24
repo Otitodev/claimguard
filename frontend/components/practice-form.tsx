@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { updatePractice } from "@/lib/api";
 import type { AppealTone, Practice, PracticeUpdate } from "@/lib/types";
 
@@ -318,6 +319,7 @@ export function PracticeForm({
         </CardContent>
         <CardFooter>
           <Button onClick={submit} disabled={saving}>
+            {saving ? <Spinner data-icon="inline-start" /> : null}
             {saving ? "Saving…" : "Save changes"}
           </Button>
         </CardFooter>
@@ -425,7 +427,11 @@ export function PracticeForm({
           </Button>
         ) : (
           <Button onClick={submit} disabled={saving}>
-            <HugeiconsIcon icon={CheckmarkCircle02Icon} data-icon="inline-start" />
+            {saving ? (
+              <Spinner data-icon="inline-start" />
+            ) : (
+              <HugeiconsIcon icon={CheckmarkCircle02Icon} data-icon="inline-start" />
+            )}
             {saving ? "Saving…" : "Finish setup"}
           </Button>
         )}
