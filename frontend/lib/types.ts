@@ -20,6 +20,8 @@ export interface Practice {
   id: string;
   name: string;
   plan?: string;
+  plan_label?: string;
+  plan_price_monthly?: string;
   phone?: string | null;
   fax?: string | null;
   address_line1?: string | null;

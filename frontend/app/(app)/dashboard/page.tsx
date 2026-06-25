@@ -61,24 +61,16 @@ export default async function HomePage() {
             <HugeiconsIcon icon={DollarCircleIcon} className="size-4 text-primary" />
             Your plan
           </CardDescription>
-          <CardTitle className="text-xl">
-            {summary.plan_label} · {formatCurrency(summary.plan_price_monthly)}/mo
-          </CardTitle>
+          <CardTitle className="text-xl">{summary.plan_label}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <p className="text-xs text-muted-foreground">
                 Recovered this month
               </p>
               <p className="mt-1 text-2xl font-semibold tabular-nums text-status-recovered">
                 {formatCurrency(summary.revenue_recovered_this_month)}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Subscription cost</p>
-              <p className="mt-1 text-2xl font-semibold tabular-nums">
-                {formatCurrency(summary.plan_price_monthly)}
               </p>
             </div>
             <div>

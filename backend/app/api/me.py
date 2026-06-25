@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from ..auth import get_current_practice
 from ..db import get_session
 from ..models import Practice
+from ..plans import get_plan
 from ..schemas import PROFILE_REQUIRED_FIELDS, PracticeOut, PracticeUpdate
 
 router = APIRouter(tags=["me"])
@@ -14,10 +15,13 @@ def _profile_complete(practice: Practice) -> bool:
 
 
 def _serialize(practice: Practice) -> PracticeOut:
+    plan = get_plan(practice.plan)
     return PracticeOut(
         id=str(practice.id),
         name=practice.name,
         plan=practice.plan,
+        plan_label=str(plan["label"]),
+        plan_price_monthly=plan["price_monthly"],  # type: ignore[arg-type]
         phone=practice.phone,
         fax=practice.fax,
         address_line1=practice.address_line1,

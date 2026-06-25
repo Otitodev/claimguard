@@ -1,6 +1,13 @@
 import { EmailIntakeCard } from "@/components/email-intake-card";
 import { PracticeForm } from "@/components/practice-form";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { defaultPractice } from "@/lib/api-server";
+import { formatCurrency } from "@/lib/format";
 
 export default async function SettingsPage() {
   const practice = await defaultPractice();
@@ -16,6 +23,15 @@ export default async function SettingsPage() {
       </div>
       <PracticeForm initial={practice} mode="settings" />
       <EmailIntakeCard address={practice.agentmail_address} />
+      <Card>
+        <CardHeader>
+          <CardDescription>Plan</CardDescription>
+          <CardTitle className="text-lg">
+            {practice.plan_label || "ClaimGuard"} ·{" "}
+            {formatCurrency(practice.plan_price_monthly)}/mo
+          </CardTitle>
+        </CardHeader>
+      </Card>
     </div>
   );
 }

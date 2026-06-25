@@ -209,6 +209,10 @@ class PracticeOut(BaseModel):
     id: str
     name: str
     plan: str
+    # Human label + monthly price (from app/plans.py) — shown on Settings only,
+    # not the dashboard.
+    plan_label: str = ""
+    plan_price_monthly: Decimal = Decimal("0")
     phone: Optional[str] = None
     fax: Optional[str] = None
     address_line1: Optional[str] = None
