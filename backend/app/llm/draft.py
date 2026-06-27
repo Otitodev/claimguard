@@ -26,6 +26,7 @@ def draft_appeal(
     policy_context: str = "",
     appeal_tone: Optional[str] = None,
     specialty: Optional[str] = None,
+    instruction: Optional[str] = None,
 ) -> str:
     from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -51,6 +52,11 @@ def draft_appeal(
         user += f"\nWrite the letter in a {_tone} tone."
     if policy_context:
         user += f"\n\nPayer/CARC policy guidance to ground the argument:\n{policy_context}"
+    if instruction:
+        user += (
+            "\n\nAdditional instruction from the practice for this redraft "
+            f"(follow it while keeping the letter factual and payer-ready):\n{instruction}"
+        )
     response = llm.invoke(
         [SystemMessage(content=DRAFT_APPEAL), HumanMessage(content=user)]
     )

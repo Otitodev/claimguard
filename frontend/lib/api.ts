@@ -1,4 +1,10 @@
-import type { AppealStatus, Practice, PracticeUpdate, UploadResult } from "./types";
+import type {
+  AppealStatus,
+  AppealTone,
+  Practice,
+  PracticeUpdate,
+  UploadResult,
+} from "./types";
 
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -63,6 +69,24 @@ export async function updateAppeal(
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(`update appeal failed: ${res.status}`);
+}
+
+/**
+ * Regenerate an appeal letter on demand. Returns the new draft text WITHOUT
+ * persisting it — the caller loads it into the editor and saves via updateAppeal.
+ */
+export async function redraftAppeal(
+  appealId: string,
+  payload: { instruction?: string; tone?: AppealTone },
+): Promise<{ letter_text: string }> {
+  const token = await getClientToken();
+  const res = await fetch(`${API_BASE}/appeals/${appealId}/redraft`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders(token) },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`redraft appeal failed: ${res.status}`);
+  return res.json() as Promise<{ letter_text: string }>;
 }
 
 /** Update the signed-in user's practice profile (onboarding + Settings). */

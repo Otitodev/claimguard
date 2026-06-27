@@ -4,7 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Download01Icon, FileDownloadIcon } from "@hugeicons/core-free-icons";
+import {
+  AiMagicIcon,
+  Download01Icon,
+  FileDownloadIcon,
+} from "@hugeicons/core-free-icons";
 
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -18,7 +22,8 @@ import {
 } from "@/components/ui/card";
 import { RichEditor } from "@/components/rich-editor";
 import { Spinner } from "@/components/ui/spinner";
-import { downloadAppeal, updateAppeal } from "@/lib/api";
+import { Textarea } from "@/components/ui/textarea";
+import { downloadAppeal, redraftAppeal, updateAppeal } from "@/lib/api";
 import type { AppealOut, AppealStatus } from "@/lib/types";
 
 export function AppealPanel({
@@ -33,8 +38,33 @@ export function AppealPanel({
   const [saving, setSaving] = useState(false);
   const [busy, setBusy] = useState<AppealStatus | "save" | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [instruction, setInstruction] = useState("");
+  const [regenerating, setRegenerating] = useState(false);
 
   const terminal = appeal.status === "won" || appeal.status === "lost";
+
+  async function regenerate() {
+    if (
+      text !== (appeal.letter_text ?? "") &&
+      !window.confirm(
+        "Regenerating will replace the current letter, including unsaved edits. Continue?",
+      )
+    ) {
+      return;
+    }
+    setRegenerating(true);
+    try {
+      const { letter_text } = await redraftAppeal(appeal.id, {
+        instruction: instruction.trim() || undefined,
+      });
+      setText(letter_text);
+      toast.success("New draft generated — review and save");
+    } catch {
+      toast.error("Could not regenerate the appeal letter");
+    } finally {
+      setRegenerating(false);
+    }
+  }
 
   async function handleDownload(format: "pdf" | "doc") {
     setDownloading(format);
@@ -90,12 +120,42 @@ export function AppealPanel({
           <StatusBadge value={appeal.status} kind="appeal" />
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col gap-3">
         <RichEditor
           content={text}
           onUpdate={setText}
           disabled={terminal}
         />
+        {!terminal ? (
+          <div className="flex flex-col gap-2 rounded-lg border bg-muted/30 p-3">
+            <Textarea
+              value={instruction}
+              onChange={(e) => setInstruction(e.target.value)}
+              disabled={regenerating}
+              rows={2}
+              placeholder="Optional: tell the AI how to redraft — e.g. “make it more assertive” or “emphasize the prior authorization”"
+              className="resize-none bg-background"
+            />
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs text-muted-foreground">
+                Generates a fresh draft for you to review — nothing is saved until
+                you click “Save letter”.
+              </span>
+              <Button
+                variant="outline"
+                onClick={regenerate}
+                disabled={regenerating}
+              >
+                {regenerating ? (
+                  <Spinner data-icon="inline-start" />
+                ) : (
+                  <HugeiconsIcon icon={AiMagicIcon} data-icon="inline-start" />
+                )}
+                {regenerating ? "Regenerating…" : "Regenerate"}
+              </Button>
+            </div>
+          </div>
+        ) : null}
       </CardContent>
       <CardFooter className="flex-wrap justify-between gap-2">
         <div className="flex flex-wrap gap-2">

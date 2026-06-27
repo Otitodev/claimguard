@@ -184,6 +184,21 @@ class AppealUpdate(BaseModel):
     recovered_amount: Optional[Decimal] = None
 
 
+class AppealRedraft(BaseModel):
+    """Request body for POST /appeals/{id}/redraft — regenerate the letter on
+    demand, optionally steered by a free-text instruction and/or tone override."""
+
+    instruction: Optional[str] = None
+    tone: Optional[Literal["formal", "assertive", "concise"]] = None
+
+
+class AppealRedraftOut(BaseModel):
+    """The freshly generated letter — not yet persisted; the client saves it via
+    PATCH /appeals/{id} after review."""
+
+    letter_text: str
+
+
 # --- Practice profile (onboarding + Settings) --------------------------------
 
 AppealTone = Literal["formal", "assertive", "concise"]

@@ -7,10 +7,13 @@ from sqlalchemy.orm import Session
 
 from ..auth import get_current_practice
 from ..db import get_session
+from ..llm.draft import draft_appeal
+from ..llm.policy import retrieve_policy
+from ..llm.provider import get_chat_model
 from ..models import APPEAL_RESPONSE_WINDOW_DAYS, Appeal, Practice
-from ..schemas import AppealOut, AppealUpdate
+from ..schemas import AppealOut, AppealRedraft, AppealRedraftOut, AppealUpdate
 from ..services.export import generate_doc, generate_pdf
-from ..services.persistence import log_activity
+from ..services.persistence import get_category, log_activity
 
 router = APIRouter(tags=["appeals"])
 
@@ -67,6 +70,57 @@ def update_appeal(
     session.commit()
     session.refresh(appeal)
     return AppealOut.model_validate(appeal)
+
+
+@router.post("/appeals/{appeal_id}/redraft", response_model=AppealRedraftOut)
+def redraft_appeal(
+    appeal_id: uuid.UUID,
+    payload: AppealRedraft,
+    practice: Practice = Depends(get_current_practice),
+    session: Session = Depends(get_session),
+) -> AppealRedraftOut:
+    """Regenerate the appeal letter on demand (TRD §6).
+
+    Re-runs the same drafting step as the pipeline, reconstructing its inputs
+    from the persisted claim/denial and re-grounding with the policy playbook,
+    optionally steered by a free-text instruction. The result is returned, not
+    saved — the client reviews it in the editor and persists via PATCH.
+    """
+    appeal = session.get(Appeal, appeal_id)
+    if appeal is None or appeal.denial.claim.practice_id != practice.id:
+        raise HTTPException(404, "appeal not found")
+    if appeal.status in ("won", "lost"):
+        raise HTTPException(409, "appeal is closed; cannot redraft")
+
+    denial = appeal.denial
+    claim = denial.claim
+    code = denial.denial_code
+    tone = payload.tone or practice.default_appeal_tone
+
+    policy_context = retrieve_policy(
+        session,
+        denial_code=code,
+        category=get_category(session, code),
+        payer_type=claim.payer.payer_type,
+    )
+
+    letter = draft_appeal(
+        get_chat_model(),
+        patient_name=claim.patient.name,
+        date_of_service=claim.date_of_service,
+        cpt_codes=claim.cpt_codes or [],
+        icd_codes=claim.icd_codes or [],
+        billed_amount=claim.billed_amount,
+        denial_code=code,
+        reason_summary=denial.ai_reason_summary or "",
+        appeal_angle=None,  # not persisted on the denial
+        payer_name=claim.payer.name,
+        policy_context=policy_context,
+        appeal_tone=tone,
+        specialty=claim.practice.specialty,
+        instruction=payload.instruction,
+    )
+    return AppealRedraftOut(letter_text=letter)
 
 
 @router.get("/appeals/{appeal_id}/export")
