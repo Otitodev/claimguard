@@ -45,9 +45,14 @@ def create_webhook(url: str) -> tuple[Optional[str], Optional[str]]:
 def download_attachment(
     inbox_id: str, message_id: str, attachment_id: str
 ) -> bytes:
-    """Download an attachment's bytes.
+    """Download an attachment's raw bytes.
 
     GET /v0/inboxes/{inbox_id}/messages/{message_id}/attachments/{attachment_id}
+    now returns JSON metadata with a short-lived presigned ``download_url`` (the
+    CDN link to the actual bytes), not the bytes inline — so we follow that. We
+    keep a fallback for the older behaviour (and any deployment that still
+    returns the bytes directly): if the response isn't the JSON wrapper, return
+    its body as-is.
     """
     url = (
         f"{settings.agentmail_base_url}/inboxes/{quote(inbox_id, safe='')}"
@@ -60,4 +65,16 @@ def download_attachment(
         timeout=30.0,
     )
     resp.raise_for_status()
+
+    content_type = resp.headers.get("content-type", "")
+    if "application/json" in content_type:
+        download_url = resp.json().get("download_url")
+        if not download_url:
+            raise ValueError("attachment metadata missing download_url")
+        # Presigned CDN URL — no auth header, may redirect.
+        dl = httpx.get(download_url, timeout=30.0, follow_redirects=True)
+        dl.raise_for_status()
+        return dl.content
+
+    # Backward-compat: endpoint returned the raw bytes directly.
     return resp.content
