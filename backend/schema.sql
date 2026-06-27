@@ -80,6 +80,8 @@ CREATE TABLE IF NOT EXISTS denials (
     -- resubmit | appeal | write_off
     ai_classification    text,
     source_document_url  text,
+    -- Intake channel for this denial: 'upload' (manual) | 'email' (AgentMail).
+    source               text NOT NULL DEFAULT 'upload',
     raw_extracted_text   text,
     created_at           timestamptz NOT NULL DEFAULT now(),
     -- Idempotency guard: one denial per claim+code+date (TRD §4)

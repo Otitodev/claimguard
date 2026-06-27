@@ -19,6 +19,9 @@ def claim_summary(claim: Claim) -> ClaimSummary:
         cpt_codes=claim.cpt_codes or [],
         billed_amount=claim.billed_amount,
         status=claim.status,
+        received_via_email=any(
+            (d.source or "upload") == "email" for d in claim.denials
+        ),
     )
 
 

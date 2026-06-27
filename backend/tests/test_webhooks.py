@@ -76,6 +76,8 @@ def test_webhook_runs_pipeline(client, inbox_practice):
         )
         assert len(claims) == 1
         assert claims[0].denials[0].ai_classification == "appeal"
+        # Emailed-in denials are tagged with the 'email' intake source.
+        assert claims[0].denials[0].source == "email"
     finally:
         s.close()
 

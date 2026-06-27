@@ -72,6 +72,8 @@ class ClaimSummary(BaseModel):
     cpt_codes: list[str]
     billed_amount: Optional[Decimal]
     status: str
+    # True if any of this claim's denials arrived via AgentMail email intake.
+    received_via_email: bool = False
 
     model_config = {"from_attributes": True}
 
@@ -84,6 +86,8 @@ class DenialOut(BaseModel):
     appeal_deadline: Optional[date]
     ai_reason_summary: Optional[str]
     ai_classification: Optional[str]
+    # Intake channel: 'upload' (manual) | 'email' (AgentMail).
+    source: str = "upload"
 
     model_config = {"from_attributes": True}
 

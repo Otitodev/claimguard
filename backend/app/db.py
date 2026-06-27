@@ -37,6 +37,9 @@ _MIGRATIONS = (
     "ALTER TABLE practices ADD COLUMN IF NOT EXISTS specialty text",
     "ALTER TABLE practices ADD COLUMN IF NOT EXISTS default_appeal_tone text "
     "NOT NULL DEFAULT 'formal'",
+    # Intake channel for each denial ('upload' | 'email').
+    "ALTER TABLE denials ADD COLUMN IF NOT EXISTS source text NOT NULL "
+    "DEFAULT 'upload'",
 )
 
 

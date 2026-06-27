@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from ..auth import get_current_practice
 from ..db import get_session
-from ..models import Claim, Practice
+from ..models import Claim, Denial, Practice
 from ..pipeline.graph import run_pipeline
 from ..schemas import ClaimDetail, ClaimSummary
 from .serializers import claim_detail, claim_summary
@@ -45,12 +45,20 @@ def upload_claim(
 def list_claims(
     status: Optional[str] = None,
     payer: Optional[str] = None,
+    source: Optional[str] = None,
     practice: Practice = Depends(get_current_practice),
     session: Session = Depends(get_session),
 ) -> list[ClaimSummary]:
     stmt = select(Claim).where(Claim.practice_id == practice.id)
     if status:
         stmt = stmt.where(Claim.status == status)
+    if source:
+        # Claims having at least one denial from the given intake channel.
+        stmt = stmt.where(
+            select(Denial.id)
+            .where(Denial.claim_id == Claim.id, Denial.source == source)
+            .exists()
+        )
     stmt = stmt.order_by(Claim.created_at.desc())
     claims = session.scalars(stmt).all()
     summaries = [claim_summary(c) for c in claims]

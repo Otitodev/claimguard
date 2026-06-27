@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Mail01Icon } from "@hugeicons/core-free-icons";
 
 import { CodeStampRow } from "@/components/code-stamp";
 import { StatusBadge } from "@/components/status-badge";
@@ -34,12 +36,23 @@ const STATUSES = [
   "written_off",
 ];
 
+const SOURCES = [
+  { value: "all", label: "All sources" },
+  { value: "email", label: "Email" },
+  { value: "upload", label: "Upload" },
+];
+
 export function ClaimsTable({ claims }: { claims: ClaimSummary[] }) {
   const router = useRouter();
   const [status, setStatus] = useState("all");
+  const [source, setSource] = useState("all");
 
-  const filtered =
-    status === "all" ? claims : claims.filter((c) => c.status === status);
+  const filtered = claims.filter((c) => {
+    if (status !== "all" && c.status !== status) return false;
+    if (source === "email" && !c.received_via_email) return false;
+    if (source === "upload" && c.received_via_email) return false;
+    return true;
+  });
 
   return (
     <div className="flex flex-col gap-4">
@@ -53,6 +66,20 @@ export function ClaimsTable({ claims }: { claims: ClaimSummary[] }) {
               {STATUSES.map((s) => (
                 <SelectItem key={s} value={s}>
                   {s === "all" ? "All statuses" : titleCase(s)}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        <Select value={source} onValueChange={setSource}>
+          <SelectTrigger className="w-44">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {SOURCES.map((s) => (
+                <SelectItem key={s.value} value={s.value}>
+                  {s.label}
                 </SelectItem>
               ))}
             </SelectGroup>
@@ -82,7 +109,17 @@ export function ClaimsTable({ claims }: { claims: ClaimSummary[] }) {
                 onClick={() => router.push(`/claims/${c.id}`)}
                 className="cursor-pointer"
               >
-                <TableCell className="font-medium">{c.patient_name}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2">
+                    <span>{c.patient_name}</span>
+                    {c.received_via_email ? (
+                      <span className="inline-flex items-center gap-1 rounded border border-primary/30 bg-primary/10 px-1.5 py-px text-[10px] font-medium uppercase tracking-wide text-primary">
+                        <HugeiconsIcon icon={Mail01Icon} className="size-3" />
+                        Email
+                      </span>
+                    ) : null}
+                  </div>
+                </TableCell>
                 <TableCell className="font-mono text-xs text-muted-foreground">
                   {formatDate(c.date_of_service)}
                 </TableCell>

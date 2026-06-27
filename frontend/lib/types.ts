@@ -58,6 +58,8 @@ export interface PracticeUpdate {
   default_appeal_tone?: AppealTone;
 }
 
+export type IntakeSource = "upload" | "email";
+
 export interface ClaimSummary {
   id: string;
   patient_name: string;
@@ -66,6 +68,7 @@ export interface ClaimSummary {
   cpt_codes: string[];
   billed_amount: string | null;
   status: ClaimStatus;
+  received_via_email?: boolean;
 }
 
 export interface DenialOut {
@@ -76,6 +79,7 @@ export interface DenialOut {
   appeal_deadline: string | null;
   ai_reason_summary: string | null;
   ai_classification: Classification | null;
+  source?: IntakeSource;
 }
 
 export interface AppealOut {

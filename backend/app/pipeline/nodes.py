@@ -241,6 +241,7 @@ def make_persist(session, llm):
             ai_reason_summary=cls.reason_summary,
             ai_classification=cls.classification,
             source_document_url=state.get("source_document_url"),
+            source=source,
             raw_extracted_text=state.get("raw_text"),
         )
         session.add(denial)

@@ -169,6 +169,10 @@ class Denial(Base):
     # resubmit | appeal | write_off
     ai_classification: Mapped[str | None] = mapped_column(Text)
     source_document_url: Mapped[str | None] = mapped_column(Text)
+    # Intake channel: 'upload' (manual) | 'email' (AgentMail webhook).
+    source: Mapped[str] = mapped_column(
+        Text, nullable=False, server_default="upload"
+    )
     raw_extracted_text: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

@@ -25,6 +25,7 @@ def test_pipeline_appeal_path(session, practice, fake_llm):
 
     denial = claim.denials[0]
     assert denial.ai_classification == "appeal"
+    assert denial.source == "upload"  # manual upload is the default intake source
     assert denial.denial_code == "CO-50"
     assert len(denial.appeals) == 1
     assert denial.appeals[0].letter_text
