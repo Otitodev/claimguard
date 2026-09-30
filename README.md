@@ -8,6 +8,12 @@ appeal letter → your biller reviews in minutes instead of hours. Built-in
 deadline tracking, response monitoring, and denial analytics keep you on top of
 every claim.
 
+## The problem
+
+Small medical practices receive insurance denials that each need to be read, classified, and answered before a filing deadline. Doing that by hand takes a biller hours per denial.
+
+**Live:** [claimguard-alpha.vercel.app](https://claimguard-alpha.vercel.app)
+
 ## Quick Start
 
 **Prerequisites:** Python 3.12, Node 22, Docker Desktop.
@@ -62,6 +68,17 @@ pre-seeded dashboard with 16 demo claims covering every workflow state.
   the full pipeline
 
 ## Architecture
+
+```mermaid
+flowchart LR
+  Practice["Practice"] -->|"upload denial PDF"| Web["Next.js on Vercel"]
+  Practice -->|"forward denial email"| Mail["AgentMail inbox"]
+  Web -->|"JWT"| API["FastAPI on EC2"]
+  Mail -->|"webhook"| API
+  API --> Graph["LangGraph: parse, classify, draft, critique"]
+  Graph --> LLM["Claude"]
+  API --> DB[("Aurora PostgreSQL")]
+```
 
 | | Technology |
 |---|---|
